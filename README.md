@@ -1,0 +1,2 @@
+# stickfight
+hobby game project
