@@ -27,3 +27,9 @@
 *.exe
 *.out
 *.app
+
+# vim buffers
+*.swp
+*.un~
+*.h~
+*.cc~
