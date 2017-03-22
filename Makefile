@@ -1,6 +1,6 @@
 
 #OBJS specifies which files to compile as part of the project
-OBJS = main.cc lTexture.o
+OBJS = main.cc utility.cc lTexture.o
 
 #CC specifies which compiler we're using
 CC = g++
