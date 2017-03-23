@@ -25,16 +25,18 @@
 #include <vector>
 #include "utility.h"
 #include "lTexture.h"
+#include "physobj.h"
 
 int main (/*int argc, char* args[])*/)
 {
-	const int SCREEN_WIDTH = 200;
-	const int SCREEN_HEIGHT = 200;
+	const int SCREEN_WIDTH = 800;
+	const int SCREEN_HEIGHT = 600;
 	SDL_Window* gWindow;
 	SDL_Renderer* gRenderer;
 	init(&gWindow,&gRenderer, SCREEN_HEIGHT, SCREEN_WIDTH);
 	bool quit=false;
 	SDL_Event event;
+	std::vector<kraftpartikel> partikel;
 	while (quit!=true)
 	{
 		while(SDL_PollEvent(&event)!=0)
