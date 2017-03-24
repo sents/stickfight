@@ -24,7 +24,7 @@
 #include <string>
 #include <cmath>
 
-
+//init function
 bool init (SDL_Window** pWindow, SDL_Renderer** pRenderer, int height, int width)
 {
 	bool success = true;
@@ -69,5 +69,42 @@ bool init (SDL_Window** pWindow, SDL_Renderer** pRenderer, int height, int width
 	}
 	std::cout << "Intialisation successful!\n";	
 	return success;
+}
+
+//simpleTimer class functions
+simpleTimer::simpleTimer()
+{
+	reset();
+}
+
+void simpleTimer::reset()
+{
+		starttime=SDL_GetTicks();
+}
+
+void simpleTimer::pause()
+{
+	if(!ispaused)
+	{
+	ispaused = true;
+	pausedtime = SDL_GetTicks();
+	}
+}
+
+void simpleTimer::unpause()
+{
+	if(ispaused)
+	{
+	starttime = starttime + (SDL_GetTicks() - pausedtime);
+	ispaused = false;
+	}
+}
+
+Uint32 simpleTimer::get()
+{
+	if (ispaused)
+		return (pausedtime - starttime);
+	else
+		return (SDL_GetTicks() - starttime);
 }
 

@@ -1,7 +1,6 @@
 
 #OBJS specifies which files to compile as part of the project
-OBJS = main.cc utility.cc lTexture.o physobj.o
-
+OBJS = main.cc utility.cc lTexture.o physobj.o bezier.o 
 #CC specifies which compiler we're using
 CC = g++
 
@@ -16,6 +15,8 @@ LINKER_FLAGS = -lSDL2 -lSDL2_image -lSDL2_ttf
 OBJ_NAME = stickfight
 
 #This is the target that compiles our executable
+bezier.o: bezier.cc
+	$(CC) bezier.cc $(COMPILER_FLAGS) $(LINKER_FLAGS) -c -o bezier.o
 physobj.o: physobj.cc
 	$(CC) physobj.cc $(COMPILER_FLAGS) $(LINKER_FLAGS) -c -o physobj.o
 lTexture.o: lTexture.cc

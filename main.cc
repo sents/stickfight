@@ -26,6 +26,7 @@
 #include "utility.h"
 #include "lTexture.h"
 #include "physobj.h"
+#include "bezier.h"
 
 int main (/*int argc, char* args[])*/)
 {
@@ -36,13 +37,32 @@ int main (/*int argc, char* args[])*/)
 	init(&gWindow,&gRenderer, SCREEN_HEIGHT, SCREEN_WIDTH);
 	bool quit=false;
 	SDL_Event event;
-	std::vector<kraftpartikel> partikel;
+	simpleTimer timer;
 	while (quit!=true)
 	{
 		while(SDL_PollEvent(&event)!=0)
 		{
 			if(event.type == SDL_QUIT)
 				quit=true;
+			if(event.type == SDL_KEYDOWN)
+			{
+				switch (event.key.keysym.sym)
+				{
+					case SDLK_p:
+						timer.pause();
+						break;
+					case SDLK_u:
+						timer.unpause();
+						break;
+					case SDLK_r:
+						timer.reset();
+						break;
+					case SDLK_g:
+						std::cout << timer.get() << "\n" << std::flush;
+						break;
+				}	
+
+			}
 		}
 		SDL_SetRenderDrawColor(gRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
 		SDL_RenderClear(gRenderer);
