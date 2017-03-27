@@ -19,6 +19,20 @@
 #include "physobj.h"
 
 //physobj Functions
+
+physobj::physobj(double x, double y, double vx, double vy)
+{
+	xpos = x;
+	ypos = y;
+	xvel = vx;
+	yvel = vy;
+}
+
+
+physobj::~physobj()
+{
+}
+
 double physobj::getx()
 {
 	return xpos;
@@ -63,88 +77,176 @@ int physobj::setyvel(double vy)
 	return 1;
 }
 
-physobj::physobj(double x, double y)
-{
-	xpos = x;
-	ypos = y;
-	/*std::cout << "xvel?\n";
-	std::cin >> xvel;
-	std::cout << "\nyvel\n";
-	std::cin >> yvel;*/
-}
-
-int physobj::reset(double x, double y)
-{
-	xpos = x;
-	ypos = y;
-	std::cout << "xvel?\n";
-	std::cin >> xvel;
-	std::cout << "\nyvel\n";
-	std::cin >> yvel;
-	std::cout << "vx,vy" << xvel << "," << yvel << std::flush;
-	return 1;
-}
-
-
-physobj::~physobj()
-{
-}
 //kraftpartikel Functions
-int kraftpartikel::iterate(double t)
+
+kraftpartikel::kraftpartikel(double x, double y, double mass, double charge) : physobj(x,y)
 {
-	sety(gety()+t*getyvel());
-	setyvel(getyvel()+t*Fy/m);
-	//std::cout << "x=x+v*t \n"  << getx()+t*getxvel() << " = " << getx() << " + " << getxvel() << " * " << t  << "\n";
-	//std::cout << "v=v+t*F/m \n"  << getxvel()+t*Fx/m << " = " << getxvel() << " + " <<  t << " * " << Fx << " / " << m << "\n";
-	setx(getx()+t*getxvel());
-	setxvel(getxvel()+t*Fx/m);
-	return 1;
+	mMass=mass;
+	mCharge=charge;
+}
+
+double kraftpartikel::getFx()
+{
+	return Fx;
+}
+
+double kraftpartikel::getFy()
+{
+	return Fy;
+}
+double kraftpartikel::getMass()
+{
+	return mMass;
+}
+
+double kraftpartikel::getCharge()
+{
+	return mCharge;
+}
+
+void kraftpartikel::setFx(double F)
+{
+	Fx = F;
+}
+
+void kraftpartikel::setFy(double F)
+{
+	Fy = F;
+}
+
+void kraftpartikel::setMass(double m)
+{
+	mMass = m;
+}
+
+void kraftpartikel::setCharge(double q)
+{
+	mCharge = q;
 }
 
 
-void kraftpartikel::coulombkraft(kraftpartikel& von, double kraft)
+
+
+
+void kraftpartikel::iterate(double t) //iteration of simulation
 {
-	double x=von.getx()-getx();
-	double y=von.gety()-gety();
-	//std::cout << "Fx = x * a / (x**2 + y**2)**3/2 :\n" << x * kraft / pow(pow(x,2)+pow(y,2),3/2) << " = " << x << " * " << kraft << " / " << pow(pow(x,2)+pow(y,2),3/2) << "\n";
-	double charge = m*von.m;
-	Fx= charge * x * kraft / pow(pow(x,2)+pow(y,2),1.5);
-	Fy= charge * y * kraft / pow(pow(x,2)+pow(y,2),1.5);
-	von.Fx = -Fx;
-	von.Fy = -Fy;
+	sety( gety() + t * getyvel() ); //Iterate Position with velocity
+	setx( getx() + t * getxvel() );
+	setyvel( getyvel() + t * Fy / mMass ); //Iterate velocity with force
+	setxvel( getxvel() + t * Fx / mMass );
+	return;
 }
 
-kraftpartikel::kraftpartikel(double x, double y, double mass) : physobj(x,y)
+
+void kraftpartikel::coulombkraft(kraftpartikel& von, double kraft) //coulombforce from von to self
 {
-	m=mass;
-	std::cout << "memberMasse= " << m << "\n" <<std::flush;
+	double x = von.getx() - getx();
+	double y = von.gety() - gety();
+	Fx = Fx + mCharge * von.mCharge * x * kraft / pow( pow(x,2) + pow(y,2) ,1.5);
+	Fy = Fy + mCharge * von.mCharge * y * kraft / pow( pow(x,2) + pow(y,2) ,1.5);
 }
 
-void kraftpartikel::elastischerstoss(kraftpartikel& obj)
+
+void kraftpartikel::elastischerstoss(kraftpartikel& obj) //elastic bounce of two kraftpartikels without collision check
 {
-	double xverb = obj.getx()-getx();
-	double yverb = obj.gety()-gety();
-	if ( (std::abs(pow(pow(xverb,2)+pow(yverb,2),0.5))) <= 1.)
-	{
-	double normverbindungsvx = xverb/pow(pow(xverb ,2)+pow(yverb,2),.5);
-	double normverbindungsvy = yverb/pow(pow(xverb,2)+pow(yverb,2),.5);
+	double xverb = obj.getx() - getx();
+	double yverb = obj.gety() - gety();
+	double normverbindungsvx = xverb / pow( pow(xverb,2) + pow(yverb,2) ,.5);
+	double normverbindungsvy = yverb / pow( pow(xverb,2) + pow(yverb,2) ,.5);
 	double v1t = getxvel() * normverbindungsvx + getyvel() * normverbindungsvy;
 	double v2t = obj.getxvel() * normverbindungsvx + obj.getyvel() * normverbindungsvy;
-	double v1tp = 2 * (m * v1t + obj.m * v2t) / (m + obj.m)- v1t;
-	double v2tp = 2 * (m * v1t + obj.m * v2t) / (m + obj.m)- v2t;
-	setxvel(normverbindungsvx*v1tp);
-	setyvel(normverbindungsvy*v1tp);
-	obj.setxvel(normverbindungsvx*v2tp);
-	obj.setyvel(normverbindungsvy*v2tp);
+	double v1tp = 2 * ( mMass * v1t + obj.mMass * v2t ) / ( mMass + obj.mMass ) - v1t;
+	double v2tp = 2 * ( mMass * v1t + obj.mMass * v2t ) / ( mMass + obj.mMass ) - v2t;
+	setxvel( normverbindungsvx * v1tp );
+	setyvel( normverbindungsvy * v1tp );
+	obj.setxvel( normverbindungsvx * v2tp );
+	obj.setyvel( normverbindungsvy * v2tp );
+}
+
+//Worldframe class functions
+
+Worldframe::~Worldframe()
+{
+	for (auto i : vKPartikel)
+	{
+		delete i;
+
+	}
+}
+
+void Worldframe::iterate(double t)
+{
+	for ( std::vector<kraftpartikel*>::iterator i = vKPartikel.begin(); i < vKPartikel.end(); i++)
+	{
+		for (std::vector<kraftpartikel*>::iterator j = i+1; j < vKPartikel.end(); j++)
+		{
+			std::cout << (j==vKPartikel.end()) << "\n" << std::flush;
+			elasticBounce(*i,*j);
+		}
+		if (isoutofworld(*i))
+		{
+			delete *i;
+			vKPartikel.erase(i);
+		}
 	}
 
-	/*double x= getx()-obj.getx();
-	double y= gety()-obj.gety();
-
-	if ( (std::abs(pow(pow(x,2)+pow(y,2),0.5))) <= 5.)
+	for (auto i : vKPartikel)
 	{
-		setxvel(getxvel()*-1);
-		setyvel(getyvel()*-1);
-	}*/
+		i->setFx(0.);
+		i->setFy(0.);
+		for( auto j: vKPartikel )
+		{
+			if ( i!=j )
+			{
+			radialForce(i,j,coulombfaktor,-2);
+			}
+		}
+		gravitationalForce(i,gravFx,gravFy);
+		i->iterate(t);
+	}
+}
+
+void Worldframe::radialForce(kraftpartikel* part1, kraftpartikel* part2, double kraftfaktor, double exponent)
+{
+	double x = part2->getx() - part1->getx();
+	double y = part2->gety() - part1->gety();
+	part1->setFx(part1->getFx() + part1->getCharge() * part2->getCharge() * x * kraftfaktor * pow( pow(x,2) + pow(y,2) , 0.5 * (exponent - 1.)));
+	part1->setFy(part1->getFy() + part1->getCharge() * part2->getCharge() * y * kraftfaktor * pow( pow(y,2) + pow(y,2) , 0.5 * (exponent - 1)));
+}
+
+void Worldframe::gravitationalForce(kraftpartikel* part, double Fx, double Fy)
+{
+	part->setFx( part->getFx() + Fx);
+	part->setFy( part->getFy() + Fy);
+}
+
+void Worldframe::elasticBounce(kraftpartikel* part1, kraftpartikel* part2)
+{
+	double xverb = part2->getx() - part1->getx();
+	double yverb = part2->gety() - part1->gety();
+	if ( (std::abs(pow(pow(xverb,2)+pow(yverb,2),0.5))) <= 1.)
+	{
+	double normverbindungsvx = xverb / pow( pow(xverb,2) + pow(yverb,2) ,.5);
+	double normverbindungsvy = yverb / pow( pow(xverb,2) + pow(yverb,2) ,.5);
+	double v1t = part1->getxvel() * normverbindungsvx + part1->getyvel() * normverbindungsvy;
+	double v2t = part2->getxvel() * normverbindungsvx + part2->getyvel() * normverbindungsvy;
+	double v1tp = 2 * ( part1->getMass() * v1t + part2->getMass() * v2t ) / ( part1->getMass() + part2->getMass() ) - v1t;
+	double v2tp = 2 * ( part1->getMass() * v1t + part2->getMass() * v2t ) / ( part1->getMass() + part2->getMass() ) - v2t;
+	part1->setxvel( normverbindungsvx * v1tp );
+	part1->setyvel( normverbindungsvy * v1tp );
+	part2->setxvel( normverbindungsvx * v2tp );
+	part2->setyvel( normverbindungsvy * v2tp );
+	}
+}
+
+bool Worldframe::isoutofworld(physobj* part)
+{
+	bool flag = false;
+	if ( part->getx() >= xsize || part->getx() <= 0 )
+		flag = true;
+	if ( part->gety() >= ysize || part->gety() <= 0 )
+		flag = true;
+	return flag;
+
 }
 

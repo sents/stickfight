@@ -38,9 +38,10 @@ class simpleTimer
 		void reset();
 		void pause();
 		void unpause();
+		void flip();
 		Uint32 get(); //Time in milliseconds
 		simpleTimer();
-	private:
+		private:
 		Uint32 starttime;
 		Uint32 pausedtime;
 		bool ispaused=false;
