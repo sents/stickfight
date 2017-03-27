@@ -100,6 +100,14 @@ void simpleTimer::unpause()
 	}
 }
 
+void simpleTimer::flip()
+{
+	if(ispaused)
+		unpause();
+	else
+		pause();
+}
+
 Uint32 simpleTimer::get()
 {
 	if (ispaused)
