@@ -8,11 +8,10 @@
 #include <iostream>
 #include <vector>	
 #include <array>
-class beznode
+class Beznode
 {
 	public:
-		beznode(float X,float Y,float Angle,float Tangent1,float Tangent2); //Angle: Tangent Angle at Node; Tangent1/2: Distance of adjacent Bezier-points
-		~beznode();
+		Beznode(float X,float Y,float Angle,float Tangent1,float Tangent2); //Angle: Tangent Angle at Node; Tangent1/2: Distance of adjacent Bezier-points
 		std::array<float,2> getCoords(); //Get Node Coordinates (x,y)
 		float getX();
 		float getY();
@@ -28,7 +27,7 @@ class beznode
 		void setTangent2(float Tangent2);
 		void setAngle(float Angle);
 		void rotate(float Angle); 
-		void translate(float x,float y);
+		void translate(float X,float Y);
 	private:
 		float mX;
 		float mY;
@@ -37,19 +36,19 @@ class beznode
 		float mTangent2;
 		
 };
-class bezierpath
+class Bezpath
 {
 	public:
+		Bezpath(std::vector<Beznode> *Nodes);
 		void translatePath(float X,float Y); //Translate every Node in Path
-		void rotatePath(float X,float Y);  //Rotate Node around Coordinate
-		int get_nodecount();
-		void pushNode(beznode Node); //Add Node
-		beznode popNode(); //Pop Node
+		void rotatePath(float X,float Y,float Angle);  //Rotate Node around Coordinate
+		unsigned int get_nodecount();
+		void insertNode(Beznode *Node,unsigned int pos);
+		void deleteNode(unsigned int pos);
+		void pushNode(Beznode *Node); //Add Node
+		void popNode(); //Pop Node
 		std::array<float,2> curve(float t); 
-	private:
-		std::vector<beznode> points;
-		int nodecount;
-
+		std::vector<Beznode> mNodes;
 };
 
 
