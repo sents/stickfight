@@ -62,6 +62,7 @@ std::array<float,2> Beznode::getT2Coords()
 
 void Beznode::setAngle(float Angle)
 {
+	Angle -= (static_cast<int>(Angle)/360)*360;
 	mAngle=Angle;
 }
 
@@ -88,7 +89,14 @@ void Beznode::setTangent2(float Tangent2)
 }
 void Beznode::rotate(float Angle)
 {
-	mAngle = Angle;
+	if (std::abs(mAngle+Angle)>=360)
+	{
+		mAngle = (mAngle+Angle)-(static_cast<int>(mAngle+Angle)/360)*360;
+	}
+	else
+	{
+		mAngle += Angle;
+	}
 }
 void Beznode::translate(float X,float Y)
 {
@@ -113,10 +121,14 @@ void Bezpath::popNode()
 
 void Bezpath::translatePath(float X, float Y)
 {
-	for(std::vector<Beznode>::iterator i = mNodes.begin();i <= mNodes.end();i++)
+	for(std::vector<Beznode>::iterator i = mNodes.begin();i < mNodes.end();i++)
 	{
 		i->translate(X,Y);
 	}
+}
+void Bezpath::translatePath(std::array<float,2> Vec)
+{
+	translatePath(Vec.at(0),Vec.at(1));
 }
 
 void Bezpath::rotatePath(float X, float Y, float Angle)
@@ -131,6 +143,10 @@ void Bezpath::rotatePath(float X, float Y, float Angle)
 	}
 }
 
+void Bezpath::rotatePath(std::array<float,2> Vec, float Angle)
+{
+	rotatePath(Vec.at(0),Vec.at(1),Angle);
+}
 
 Bezpath::Bezpath(std::vector<Beznode> *Nodes)
 {
@@ -145,8 +161,16 @@ std::array<float,2> Bezpath::curve(float t)
 	{t=0;}
 	else if (t>n)
 	{t=n;}
-	X=(1-t)*(mNodes.at(n).getX()*(1-t)+mNodes.at(n).getT2Coords().at(0))+t*((1-t)*mNodes.at(n+1).getT1Coords().at(0)+t*mNodes.at(n+1).getX());
-	Y=(1-t)*(mNodes.at(n).getY()*(1-t)+mNodes.at(n).getT2Coords().at(1))+t*((1-t)*mNodes.at(n+1).getT1Coords().at(1)+t*mNodes.at(n+1).getY());
+	float P0X = mNodes.at(n).getX();
+	float P1X = mNodes.at(n).getT2Coords().at(0);
+	float P2X = mNodes.at(n+1).getT1Coords().at(0);
+	float P3X = mNodes.at(n+1).getX();
+	float P0Y = mNodes.at(n).getY();
+	float P1Y = mNodes.at(n).getT2Coords().at(1);
+	float P2Y = mNodes.at(n+1).getT1Coords().at(1);
+	float P3Y = mNodes.at(n+1).getY();
+	X=(1-t)*((1-t)*((1-t)*P0X+t*P1X)+t*((1-t)*P1X+t*P2X))+t*((1-t)*((1-t)*P1X+t*P2X)+t*((1-t)*P2X+t*P3X));
+	Y=(1-t)*((1-t)*((1-t)*P0Y+t*P1Y)+t*((1-t)*P1Y+t*P2Y))+t*((1-t)*((1-t)*P1Y+t*P2Y)+t*((1-t)*P2Y+t*P3Y));
 	std::array<float,2> vec = {{X,Y}};
 	return vec;
 }
@@ -162,3 +186,5 @@ void Bezpath::deleteNode(unsigned int pos)
 	std::vector<Beznode>::iterator it = mNodes.begin();
 	mNodes.erase(it+pos);
 }
+
+
