@@ -138,31 +138,6 @@ void kraftpartikel::iterate(double t) //iteration of simulation
 }
 
 
-void kraftpartikel::coulombkraft(kraftpartikel& von, double kraft) //coulombforce from von to self
-{
-	double x = von.getx() - getx();
-	double y = von.gety() - gety();
-	Fx = Fx + mCharge * von.mCharge * x * kraft / pow( pow(x,2) + pow(y,2) ,1.5);
-	Fy = Fy + mCharge * von.mCharge * y * kraft / pow( pow(x,2) + pow(y,2) ,1.5);
-}
-
-
-void kraftpartikel::elastischerstoss(kraftpartikel& obj) //elastic bounce of two kraftpartikels without collision check
-{
-	double xverb = obj.getx() - getx();
-	double yverb = obj.gety() - gety();
-	double normverbindungsvx = xverb / pow( pow(xverb,2) + pow(yverb,2) ,.5);
-	double normverbindungsvy = yverb / pow( pow(xverb,2) + pow(yverb,2) ,.5);
-	double v1t = getxvel() * normverbindungsvx + getyvel() * normverbindungsvy;
-	double v2t = obj.getxvel() * normverbindungsvx + obj.getyvel() * normverbindungsvy;
-	double v1tp = 2 * ( mMass * v1t + obj.mMass * v2t ) / ( mMass + obj.mMass ) - v1t;
-	double v2tp = 2 * ( mMass * v1t + obj.mMass * v2t ) / ( mMass + obj.mMass ) - v2t;
-	setxvel( normverbindungsvx * v1tp );
-	setyvel( normverbindungsvy * v1tp );
-	obj.setxvel( normverbindungsvx * v2tp );
-	obj.setyvel( normverbindungsvy * v2tp );
-}
-
 //Worldframe class functions
 
 Worldframe::~Worldframe()
@@ -180,8 +155,7 @@ void Worldframe::iterate(double t)
 	{
 		for (std::vector<kraftpartikel*>::iterator j = i+1; j < vKPartikel.end(); j++)
 		{
-			std::cout << (j==vKPartikel.end()) << "\n" << std::flush;
-			elasticBounce(*i,*j);
+		//	elasticBounce(*i,*j);
 		}
 		if (isoutofworld(*i))
 		{
@@ -198,7 +172,8 @@ void Worldframe::iterate(double t)
 		{
 			if ( i!=j )
 			{
-			radialForce(i,j,coulombfaktor,-2);
+			radialForce(i,j,coulombfaktor,-2.);
+			radialForce(i,j,-1*coulombfaktor,-5.);
 			}
 		}
 		gravitationalForce(i,gravFx,gravFy);
@@ -211,7 +186,7 @@ void Worldframe::radialForce(kraftpartikel* part1, kraftpartikel* part2, double 
 	double x = part2->getx() - part1->getx();
 	double y = part2->gety() - part1->gety();
 	part1->setFx(part1->getFx() + part1->getCharge() * part2->getCharge() * x * kraftfaktor * pow( pow(x,2) + pow(y,2) , 0.5 * (exponent - 1.)));
-	part1->setFy(part1->getFy() + part1->getCharge() * part2->getCharge() * y * kraftfaktor * pow( pow(y,2) + pow(y,2) , 0.5 * (exponent - 1)));
+	part1->setFy(part1->getFy() + part1->getCharge() * part2->getCharge() * y * kraftfaktor * pow( pow(x,2) + pow(y,2) , 0.5 * (exponent - 1)));
 }
 
 void Worldframe::gravitationalForce(kraftpartikel* part, double Fx, double Fy)
@@ -250,3 +225,7 @@ bool Worldframe::isoutofworld(physobj* part)
 
 }
 
+bool Worldframe::collisioncheck(physobj* part1, physobj* part2)
+{
+	return pow( pow( part2->getx() - part1->getx() , 2 ) + pow( part2->gety() - part1->gety() , 2) , 0.5 ) <= 1. ;
+}

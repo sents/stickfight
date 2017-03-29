@@ -108,6 +108,11 @@ void simpleTimer::flip()
 		pause();
 }
 
+bool simpleTimer::getstatus()
+{
+	return ispaused;
+}
+
 Uint32 simpleTimer::get()
 {
 	if (ispaused)
