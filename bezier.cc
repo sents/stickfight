@@ -107,6 +107,7 @@ void Beznode::translate(float X,float Y)
 }
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 //Bezpath class functions
 Bezpath::Bezpath(std::vector<Beznode> *Nodes)
 {
@@ -115,6 +116,8 @@ Bezpath::Bezpath(std::vector<Beznode> *Nodes)
 
 Bezpath::Bezpath()
 {}
+=======
+>>>>>>> ba9977baf63dc44888cb84b98e9e9acf7082a091
 =======
 >>>>>>> ba9977baf63dc44888cb84b98e9e9acf7082a091
 
@@ -176,6 +179,9 @@ std::array<std::array<float, 2>, 4> Bezpath::controlPoints(unsigned int n )
 	std::array<std::array<float,2>,4> Points = {{mNodes.at(n).getCoords(),mNodes.at(n).getT2Coords(),mNodes.at(n+1).getT1Coords(),mNodes.at(n+1).getCoords()}};
 	return Points;
 }
+<<<<<<< HEAD
+>>>>>>> ba9977baf63dc44888cb84b98e9e9acf7082a091
+=======
 >>>>>>> ba9977baf63dc44888cb84b98e9e9acf7082a091
 
 std::array<float,2> Bezpath::curve(float t)
