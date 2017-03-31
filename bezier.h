@@ -28,7 +28,7 @@ class Beznode
 		void setAngle(float Angle);
 		void rotate(float Angle); 
 		void translate(float X,float Y);
-	private:
+		private:
 		float mX;
 		float mY;
 		float mAngle;
@@ -45,14 +45,20 @@ class Bezpath
 		void rotatePath(float X,float Y,float Angle);  //Rotate Node around Coordinate
 		void rotatePath(std::array<float,2> Vec, float Angle);
 		unsigned int get_nodecount();
+		std::array<std::array<float,2>,4> controlPoints(unsigned int n);
 		void insertNode(Beznode *Node,unsigned int pos);
 		void deleteNode(unsigned int pos);
 		void pushNode(Beznode *Node); //Add Node
 		void popNode(); //Pop Node
 		std::array<float,2> curve(float t); 
+		bool intersect(const Bezpath &Path);
 		std::vector<Beznode> mNodes;
 };
 
+
+int triangleorient(std::array<float,2> A,std::array<float,2> C,std::array<float,2> B);
+std::vector<std::array<float,2>> hullfor4(std::array<float,2> A,std::array<float,2> C,std::array<float,2> B,std::array<float,2> D);
+std::vector<std::array<float,2>> hull(std::array<std::array<float,2>,4> Points);
 
 
 #endif

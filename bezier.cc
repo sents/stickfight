@@ -104,6 +104,7 @@ void Beznode::translate(float X,float Y)
 	mY += Y;
 }
 
+
 unsigned int Bezpath::get_nodecount()
 {
 	return static_cast<unsigned int>(mNodes.size());
@@ -152,6 +153,15 @@ Bezpath::Bezpath(std::vector<Beznode> *Nodes)
 {
 	mNodes=*Nodes;
 }
+
+std::array<std::array<float, 2>, 4> Bezpath::controlPoints(unsigned int n )
+{
+	if (n>=mNodes.size())
+	{n=mNodes.size()-1;}
+	std::array<std::array<float,2>,4> Points = {{mNodes.at(n).getCoords(),mNodes.at(n).getT2Coords(),mNodes.at(n+1).getT1Coords(),mNodes.at(n+1).getCoords()}};
+	return Points;
+}
+
 std::array<float,2> Bezpath::curve(float t)
 {
 	float X;
@@ -159,8 +169,8 @@ std::array<float,2> Bezpath::curve(float t)
 	int n=static_cast<int>(t);
 	if (t<0)
 	{t=0;}
-	else if (t>n)
-	{t=n;}
+	else if (t>get_nodecount()-1)
+	{t=get_nodecount()-1;}
 	float P0X = mNodes.at(n).getX();
 	float P1X = mNodes.at(n).getT2Coords().at(0);
 	float P2X = mNodes.at(n+1).getT1Coords().at(0);
@@ -186,5 +196,135 @@ void Bezpath::deleteNode(unsigned int pos)
 	std::vector<Beznode>::iterator it = mNodes.begin();
 	mNodes.erase(it+pos);
 }
+/*
+std::array<float,3> Bezpath::koeff(int n)
+{
+	float P0X = mNodes.at(n).getX();
+	float P1X = mNodes.at(n).getT2Coords().at(0);
+	float P2X = mNodes.at(n+1).getT1Coords().at(0);
+	float P3X = mNodes.at(n+1).getX();
+	float P0Y = mNodes.at(n).getY();
+	float P1Y = mNodes.at(n).getT2Coords().at(1);
+	float P2Y = mNodes.at(n+1).getT1Coords().at(1);
+	float P3Y = mNodes.at(n+1).getY();
+	std::<float,3> vec = {{P}}
 
+}
+*/
+
+int triangleorient(std::array<float,2> A,std::array<float,2> C,std::array<float,2> B)
+{
+	float result = B[0]*C[1]-B[1]*C[0]-B[0]*A[1]+B[1]*A[0]-C[1]*A[0]+C[0]*A[1];
+	if (result<0)
+	{return -1;}
+	else if (result>0)
+	{return 1;}
+	else
+	{return 0;}
+}
+
+std::vector<std::array<float,2>> hullfor4(std::array<float,2> A,std::array<float,2> C,std::array<float,2> B,std::array<float,2> D)
+{
+	std::vector<std::array<float,2>> hull;
+	//Checking Orientation of partial triangles
+	int triangle_ABC=triangleorient(A,B,C);
+	int triangle_ABD=triangleorient(A,B,D);
+	int triangle_BCD=triangleorient(B,C,D);
+	int triangle_CAD=triangleorient(C,A,D);
+	int zahl= triangle_ABC+triangle_ABD+triangle_BCD+triangle_CAD;
+	if (abs(zahl) == 4)
+	{
+		hull.push_back(A);
+		hull.push_back(B);
+		hull.push_back(C);
+
+	}
+	else if (abs(zahl) == 3)
+	{
+		hull.push_back(A);
+		hull.push_back(B);
+		hull.push_back(C);
+		hull.push_back(D);
+	}
+	else if (abs(zahl) == 2)
+	{
+		if (triangle_ABC == triangle_ABD)
+		{
+			hull.push_back(A);
+			hull.push_back(B);
+			hull.push_back(D);
+		}
+		if (triangle_ABC == triangle_BCD)
+		{
+			hull.push_back(B);
+			hull.push_back(C);
+			hull.push_back(D);
+		}
+		if (triangle_ABC == triangle_CAD)
+		{
+			hull.push_back(C);
+			hull.push_back(A);
+			hull.push_back(D);
+		}
+	}
+	else
+	{
+	       	hull.push_back(A);
+		hull.push_back(B);
+	}
+	return hull;
+}
+
+
+std::vector<std::array<float,2>> hull(std::array<std::array<float,2>,4> Points)
+{
+	float det;
+	float a,b,c,d,y0,y1,x0,x1;
+	int front = 0;
+	std::vector<std::array<float,2>> out;
+	for (std::array<std::array<float,2>,4>::iterator i=Points.begin()+1;i<Points.end();i++)
+	{
+		a=Points.at(0).at(0)-i->at(0);
+		b=((Points.begin()+(i-Points.begin()+2)%3)->at(0)-(Points.begin()+(i-Points.begin()+1)%3)->at(0));
+		c=Points.at(0).at(1)-i->at(0);
+		d=((Points.begin()+(i-Points.begin()+2)%3)->at(1)-(Points.begin()+(i-Points.begin()+1)%3)->at(1));
+		det=a*d-b*c;
+		y0=Points.at(0).at(0)-(Points.begin()+(i-Points.begin()+1)%3)->at(0);
+		y1=Points.at(0).at(1)-(Points.begin()+(i-Points.begin()+1)%3)->at(1);
+		if (det!=0)
+		{
+			x0=(y0*d-b*y1)/det;
+			x1=(a*y1-c*y0)/det;
+			if (x0 >= 0 && x0<=1 && x1 >= 0 && x1 <= 0) //if true then quadrangle with AI and I+1I+2 intersection
+			{
+				out = {Points.at(0),*(Points.begin()+(i-Points.begin()+1)%3),*i,*(Points.begin()+(i-Points.begin()+1)%3)};
+				return out;
+			}
+			else if (x0 == 0)
+			{
+				out = {Points.at(1),Points.at(2),Points.at(3)};
+				return out;
+			}
+			else if (x0 == 1 && x1 <= 1 && x1 >= 0)
+			{
+				out = {Points.at(0),*(Points.begin()+(i-Points.begin()+1)%3),*(Points.begin()+(i-Points.begin()+2)%3)};
+			}
+			else if (x0 >= 1)
+			{front = i-Points.begin()+1; 
+			}
+		}
+		else
+		{
+			out = {Points.at(0),Points.at(3)};
+			return out;
+		}
+	}
+	out = {Points.at(front+1%4),Points.at(front+2%4),Points.at(front+3%4)};
+	return out;
+}
+
+std::vector<std::array<float,2>> hull(std::array<float,2> A,std::array<float,2> C,std::array<float,2> B,std::array<float,2> D)
+{
+	return hull({{A,B,C,D}});
+}
 
