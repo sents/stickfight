@@ -39,15 +39,16 @@ class Beznode
 class Bezpath
 {
 	public:
+		Bezpath();
 		Bezpath(std::vector<Beznode> *Nodes);
 		void translatePath(float X,float Y); //Translate every Node in Path
 		void translatePath(std::array<float,2> Vec);
 		void rotatePath(float X,float Y,float Angle);  //Rotate Node around Coordinate
 		void rotatePath(std::array<float,2> Vec, float Angle);
 		unsigned int get_nodecount();
-		void insertNode(Beznode *Node,unsigned int pos);
+		void insertNode(const Beznode &Node,unsigned int pos);
 		void deleteNode(unsigned int pos);
-		void pushNode(Beznode *Node); //Add Node
+		void pushNode(const Beznode &Node); //Add Node
 		void popNode(); //Pop Node
 		std::array<float,2> curve(float t); 
 		std::vector<Beznode> mNodes;

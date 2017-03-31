@@ -1,5 +1,6 @@
 #include "bezier.h"
 
+//Beznode class functions
 Beznode::Beznode(float X,float Y,float Angle,float Tangent1,float Tangent2) : mX(X),mY(Y),mAngle(Angle),mTangent1(Tangent1),mTangent2(Tangent2)
 {
 }
@@ -98,20 +99,30 @@ void Beznode::rotate(float Angle)
 		mAngle += Angle;
 	}
 }
+
 void Beznode::translate(float X,float Y)
 {
 	mX += X;
 	mY += Y;
 }
 
+//Bezpath class functions
+Bezpath::Bezpath(std::vector<Beznode> *Nodes)
+{
+	mNodes=*Nodes;
+}
+
+Bezpath::Bezpath()
+{}
+
 unsigned int Bezpath::get_nodecount()
 {
 	return static_cast<unsigned int>(mNodes.size());
 }
 
-void Bezpath::pushNode(Beznode *Node)
+void Bezpath::pushNode(const Beznode &Node)
 {
-	mNodes.push_back(*Node);
+	mNodes.push_back(Node);
 }
 
 void Bezpath::popNode()
@@ -148,10 +159,7 @@ void Bezpath::rotatePath(std::array<float,2> Vec, float Angle)
 	rotatePath(Vec.at(0),Vec.at(1),Angle);
 }
 
-Bezpath::Bezpath(std::vector<Beznode> *Nodes)
-{
-	mNodes=*Nodes;
-}
+
 std::array<float,2> Bezpath::curve(float t)
 {
 	float X;
@@ -175,10 +183,10 @@ std::array<float,2> Bezpath::curve(float t)
 	return vec;
 }
 
-void Bezpath::insertNode(Beznode *Node,unsigned int pos)
+void Bezpath::insertNode(const Beznode &Node,unsigned int pos)
 {
 	std::vector<Beznode>::iterator it = mNodes.begin();
-	mNodes.insert(it+pos,*Node);
+	mNodes.insert(it+pos,Node);
 }
 
 void Bezpath::deleteNode(unsigned int pos)
