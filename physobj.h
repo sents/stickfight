@@ -37,7 +37,6 @@ class physobj
 		double getyvel();
 		int setxvel(double x);
 		int setyvel(double y);
-		int reset(double x, double y);
 		physobj(double x, double y, double vx=0, double vy=0);
 		~physobj();
 
@@ -51,14 +50,11 @@ class physobj
 
 
 
-
 class kraftpartikel : public physobj
 {
 	public:
 		kraftpartikel(double x, double y, double mass = 1, double charge = 1);
-		void elastischerstoss(kraftpartikel& obj);
 		void iterate(double t);
-		void coulombkraft(kraftpartikel& obj, double kraft);
 		double getFx(); //get methods
 		double getFy();
 		double getMass();
@@ -82,23 +78,21 @@ class Worldframe
 {
 	public:
 		void iterate(double t);
-		void radialForce(kraftpartikel* part1, kraftpartikel* part2, double kraftfaktor, double exponent);
-		void elasticBounce(kraftpartikel* part1, kraftpartikel* part2);
-		void gravitationalForce(kraftpartikel* part, double Fx, double Fy);
-		bool collisioncheck();
-		bool isoutofworld(physobj* part);
-
 		~Worldframe();
 
 		double xsize = 0; 
 		double ysize = 0; 
-		double coulombfaktor = 1;
+		double coulombfaktor = 40000;
 		double gravFx = 0;
-		double gravFy = 1;
+		double gravFy = 2000;
 
 		std::vector<kraftpartikel*> vKPartikel;
 	private:
-
+		void radialForce(kraftpartikel* part1, kraftpartikel* part2, double kraftfaktor, double exponent); //radialkraft part2 auf part1. Form: F^{->} = e^{^}_{r} * kraftfaktor * r^{exponent}
+		void elasticBounce(kraftpartikel* part1, kraftpartikel* part2);
+		void gravitationalForce(kraftpartikel* part, double Fx, double Fy); //In bestimmte Richtung gerichtete kraft.
+		bool collisioncheck(physobj* part1, physobj* part2);
+		bool isoutofworld(physobj* part);
 };
 
 #endif

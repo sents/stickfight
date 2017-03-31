@@ -39,6 +39,7 @@ class simpleTimer
 		void pause();
 		void unpause();
 		void flip();
+		bool getstatus();
 		Uint32 get(); //Time in milliseconds
 		simpleTimer();
 		private:
