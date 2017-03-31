@@ -46,15 +46,9 @@ class Bezpath
 		void rotatePath(float X,float Y,float Angle);  //Rotate Node around Coordinate
 		void rotatePath(std::array<float,2> Vec, float Angle);
 		unsigned int get_nodecount();
-<<<<<<< HEAD
-<<<<<<< HEAD
 		void insertNode(const Beznode &Node,unsigned int pos);
-=======
-=======
->>>>>>> ba9977baf63dc44888cb84b98e9e9acf7082a091
 		std::array<std::array<float,2>,4> controlPoints(unsigned int n);
 		void insertNode(Beznode *Node,unsigned int pos);
->>>>>>> ba9977baf63dc44888cb84b98e9e9acf7082a091
 		void deleteNode(unsigned int pos);
 		void pushNode(const Beznode &Node); //Add Node
 		void popNode(); //Pop Node
