@@ -34,6 +34,7 @@ void drawBezierPath(SDL_Renderer* renderer, Bezpath bPath);
 int KASTENGROSSE = 5;
 const int SCREEN_WIDTH = 800;
 const int SCREEN_HEIGHT = 600;
+const int FRAMERATE = 25;
 
 int main (/*int argc, char* args[])*/)
 {
@@ -85,7 +86,7 @@ int main (/*int argc, char* args[])*/)
 		}
 		if (!timer.getstatus())
 		world.iterate(1e-5);
-		if( timer.get() >= (1000/25) )
+		if( timer.get() >= (1000/FRAMERATE) )
 		{
 		SDL_SetRenderDrawColor(gRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
 		SDL_RenderClear(gRenderer);
@@ -123,7 +124,6 @@ Bezpath createbezierpath(SDL_Renderer* renderer)
 	bool quit = false;
 	SDL_Event event;
 	std::array<int,2> temppos;
-	std::vector<std::array<int,2>> vPoints;
 	Bezpath path;
 	bool pos_or_tan;
 	std::vector<Beznode>::iterator tempiter;
@@ -145,8 +145,8 @@ Bezpath createbezierpath(SDL_Renderer* renderer)
 				std::cout << "nodecount: " << path.get_nodecount() << "\n";
 				std::cout << "iterpos: " << std::distance(path.mNodes.begin(),tempiter) << "\n" << std::flush;
 				SDL_GetMouseState(&temppos[0], &temppos[1]);
-				vPoints.push_back(temppos);
-
+				tempnode.setCoords(static_cast<float>(temppos[0]),static_cast<float>(temppos[1]));
+				
 				if (path.mNodes.size() == 0)
 				{
 					tempnode.setCoords(static_cast<float>(temppos[0]),static_cast<float>(temppos[1]));
@@ -183,6 +183,9 @@ Bezpath createbezierpath(SDL_Renderer* renderer)
 						break;
 					case SDLK_w:
 						std::cout << " x,y: " << tempiter->getX() << " , " << tempiter->getY() << "\n" << std::flush;
+						break;
+					case SDLK_r:
+						path.rotatePath(200,200,20);
 				}
 
 			}
@@ -192,33 +195,34 @@ Bezpath createbezierpath(SDL_Renderer* renderer)
 		SDL_RenderClear(renderer);
 		if( path.mNodes.size() != 0 )
 		{	
-		SDL_GetMouseState(&temppos[0],&temppos[1]);
-		if(pos_or_tan)
-		{
-			tempiter->setCoords(static_cast<float>(temppos[0]),static_cast<float>(temppos[1]));
-		}
-		else
-		{
-			float xrel = tempiter->getX()-temppos[0];
-			float yrel = tempiter->getX()-temppos[1];
-			float tangent = pow( pow( xrel ,2) + pow( yrel ,2) ,0.5);
-			float angle = atanf(yrel/xrel);
-			tempiter->setTangent1(tangent);
-			tempiter->setTangent2(tangent);
-			tempiter->setAngle(angle);
+			SDL_GetMouseState(&temppos[0],&temppos[1]);
+			if(pos_or_tan)
+			{
+				tempiter->setCoords(static_cast<float>(temppos[0]),static_cast<float>(temppos[1]));
+			}
+			else
+			{
+				float xrel = tempiter->getX()-temppos[0];
+				float yrel = tempiter->getY()-temppos[1];
+				float tangent = pow( pow( xrel ,2) + pow( yrel ,2) ,0.5);
+				float angle = atanf(yrel/xrel)/M_PI*360;
+				tempiter->setTangent1(tangent);
+				tempiter->setTangent2(tangent);
+				tempiter->setAngle(angle);
+			}
+
+			for( auto i : path.mNodes)
+			{
+
+				SDL_Rect objRect = {0,0,KASTENGROSSE,KASTENGROSSE};
+				objRect.x=i.getX()-KASTENGROSSE/2;
+				objRect.y=i.getY()-KASTENGROSSE/2;
+				SDL_SetRenderDrawColor(renderer,0x00,0x00,0x00,0xFF);
+				SDL_RenderFillRect(renderer,&objRect);
+			}
 		}
 
-		for( auto i : vPoints)
-		{
-
-		SDL_Rect objRect = {0,0,KASTENGROSSE,KASTENGROSSE};
-		objRect.x=i[0]-KASTENGROSSE/2;
-		objRect.y=i[1]-KASTENGROSSE/2;
-		SDL_SetRenderDrawColor(renderer,0x00,0x00,0x00,0xFF);
-		SDL_RenderFillRect(renderer,&objRect);
-		}
 		drawBezierPath(renderer, path);	
-		}
 
 		SDL_SetRenderDrawColor(renderer,0xFF,0xFF,0xFF,0xFF);
 		SDL_RenderPresent(renderer);
@@ -229,18 +233,28 @@ Bezpath createbezierpath(SDL_Renderer* renderer)
 
 void drawBezierPath(SDL_Renderer* renderer,Bezpath bPath)
 {
-	std::cout << "nodecount: " << bPath.get_nodecount() << "\n";
-	int count=20;
-	float d = static_cast<float>(bPath.get_nodecount()-1)/static_cast<float>(count);
-	std::cout << "d = " << d << "\n" << std::flush; 
-	SDL_SetRenderDrawColor(renderer,0x00,0x00,0x00,0xFF);
-
-	for(float f=0; f < bPath.get_nodecount() - 1 - d ; f = f+d)
+	if (bPath.get_nodecount() > 1)
 	{
-		std::array<float,2> linestart = bPath.curve(f);
-		std::array<float,2> lineend = bPath.curve(f+d);
-		std::cout << "Draw x,y: " <<static_cast<int>(linestart[0]) << " , " << static_cast<int>(linestart[1]) << "\n" << std::flush;
-		SDL_RenderDrawLine(renderer,static_cast<int>(linestart[0]),static_cast<int>(linestart[1]),static_cast<int>(lineend[0]),static_cast<int>(lineend[1]));
+		//std::cout << "nodecount: " << bPath.get_nodecount() << "\n";
+		int count = 20 * (bPath.get_nodecount() -1);
+		SDL_Point points[count+1];
+		float d = static_cast<float>(bPath.get_nodecount()-1)/(static_cast<float>(count));
+		SDL_SetRenderDrawColor(renderer,0x00,0x00,0x00,0xFF);
+
+		std::cout << "pathcount: " << bPath.get_nodecount() - 1 << "\n" << std::flush;
+		std::cout << "höchstes t: " << count * d << "\n" << std::flush;
+		std::cout << "count: " << count << "\n" << std::flush;
+		std::cout << "d: " << d << "\n" << std::flush;
+
+		for(int i=0; i <= count; i++)
+		{
+			std::cout << "i*d " << i*d << "\n" << std::flush;
+			points[i].x = static_cast<int>(bPath.curve(i*d)[0]);
+			points[i].y = static_cast<int>(bPath.curve(i*d)[1]);
+		}
+		std::cout << "Letzter Punkt x,y: : " << points[count].x << " , " << points[count].y << "\n" << std::flush;
+		std::cout << "Nodepunkt x,y: : " << (bPath.mNodes.end()-1)->getX() << " , " << (bPath.mNodes.end()-1)->getY() << "\n" << std::flush;
+			SDL_RenderDrawLines(renderer,points,count);
 	}
 	return;
 }

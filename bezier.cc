@@ -145,6 +145,7 @@ void Bezpath::translatePath(std::array<float,2> Vec)
 void Bezpath::rotatePath(float X, float Y, float Angle)
 {
 
+	Angle = Angle/360*M_PI*2;
 	float R;
 	for(auto i : mNodes)
 	{
@@ -178,6 +179,11 @@ std::array<float,2> Bezpath::curve(float t)
 	{t=0;}
 	else if (t>get_nodecount()-1)
 	{t=get_nodecount()-1;}
+	if ( t == n )
+	{
+		return mNodes.at(n).getCoords();
+	}
+	t-=n;
 	float P0X = mNodes.at(n).getX();
 	float P1X = mNodes.at(n).getT2Coords().at(0);
 	float P2X = mNodes.at(n+1).getT1Coords().at(0);
