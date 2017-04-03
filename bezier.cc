@@ -196,6 +196,13 @@ void Bezpath::deleteNode(unsigned int pos)
 	std::vector<Beznode>::iterator it = mNodes.begin();
 	mNodes.erase(it+pos);
 }
+
+
+bool intersect(const Bezpath &Path)
+{
+	
+}
+
 /*
 std::array<float,3> Bezpath::koeff(int n)
 {
@@ -279,22 +286,29 @@ std::vector<std::array<float,2>> hullfor4(std::array<float,2> A,std::array<float
 std::vector<std::array<float,2>> hull(std::array<std::array<float,2>,4> Points)
 {
 	float det;
-	float a,b,c,d,y0,y1,x0,x1;
+	float x0,x1;
 	int front = 0;
 	std::vector<std::array<float,2>> out;
 	for (std::array<std::array<float,2>,4>::iterator i=Points.begin()+1;i<Points.end();i++)
 	{
+		std::array<float,3> inter = vecsec(Points.at(0),*i,*(Points.begin()+(i-Points.begin()+1)%3),*(Points.begin()+(i-Points.begin()+2)%3));
+		/*
 		a=Points.at(0).at(0)-i->at(0);
+		
 		b=((Points.begin()+(i-Points.begin()+2)%3)->at(0)-(Points.begin()+(i-Points.begin()+1)%3)->at(0));
 		c=Points.at(0).at(1)-i->at(0);
 		d=((Points.begin()+(i-Points.begin()+2)%3)->at(1)-(Points.begin()+(i-Points.begin()+1)%3)->at(1));
 		det=a*d-b*c;
 		y0=Points.at(0).at(0)-(Points.begin()+(i-Points.begin()+1)%3)->at(0);
 		y1=Points.at(0).at(1)-(Points.begin()+(i-Points.begin()+1)%3)->at(1);
+		*/
+		det = inter.at(0);
+		x0 = inter.at(1);
+		x1 = inter.at(2);
 		if (det!=0)
 		{
-			x0=(y0*d-b*y1)/det;
-			x1=(a*y1-c*y0)/det;
+			//x0=(y0*d-b*y1)/det;
+			//x1=(a*y1-c*y0)/det;
 			if (x0 >= 0 && x0<=1 && x1 >= 0 && x1 <= 0) //if true then quadrangle with AI and I+1I+2 intersection
 			{
 				out = {Points.at(0),*(Points.begin()+(i-Points.begin()+1)%3),*i,*(Points.begin()+(i-Points.begin()+1)%3)};
@@ -328,3 +342,69 @@ std::vector<std::array<float,2>> hull(std::array<float,2> A,std::array<float,2> 
 	return hull({{A,B,C,D}});
 }
 
+bool polysect(std::vector<std::array<float,2>> Poly1,std::vector<std::array<float,2>> Poly2)
+{
+	std::array<float,3> sec;
+	for (std::vector<std::array<float,2>>::iterator it1 = Poly1.begin();it1<Poly1.end();it1++)
+	{
+		for (std::vector<std::array<float,2>>::iterator it2 = Poly1.begin();it2<Poly1.end();it2++)
+		{
+			sec = vecsec(*it1,*(Poly1.begin()+(it1-Poly1.begin())%Poly1.size()),*it2,*(Poly2.begin()+(it2-Poly2.begin())%Poly2.size()));
+			if (sec.at(0) != 0 && sec.at(1)  >= 0 && sec.at(1) <= 1 && sec.at(2) >= 0 && sec.at(1) <= 1)
+			{
+				return true;
+			}
+
+		}
+
+	}
+	return false;
+}
+
+std::array<float,3> vecsec(std::array<float,2> A,std::array<float,2> B,std::array<float,2> C,std::array<float,2> D)
+{
+	float det = (A.at(0)-B.at(1))*(D.at(1)-C.at(1))-(A.at(1)-B.at(1))*(D.at(0)-C.at(0));
+	if (det==0)
+	{	return {{0,0,0}};}
+//	float x0 = (D.at(1)-C.at(1))*(A.at(0)-C.at(1))+(C.at(0)-D.at(1))*(A.at(1)-C.at(1));
+//	float x1 = (B.at(1)-A.at(1))*(A.at(0)-C.at(1))+(A.at(0)-B.at(0))*(A.at(1)-C.at(1));
+	return {{det, (D.at(1)-C.at(1))*(A.at(0)-C.at(1))+(C.at(0)-D.at(1))*(A.at(1)-C.at(1)) ,(B.at(1)-A.at(1))*(A.at(0)-C.at(1))+(A.at(0)-B.at(0))*(A.at(1)-C.at(1))}};
+}
+
+
+float angleFromPoints(std::array<float,2> P1, std::array<float,2> P2)
+{
+	return std::atan2(P2.at(1)-P1.at(1),P2.at(0)-P1.at(0));
+}
+
+float distFromPoints(std::array<float,2> P1, std::array<float,2> P2)
+{
+	return std::sqrt(pow(P2.at(1)-P1.at(1),2)+pow(P2.at(0)-P1.at(0),2));
+}
+
+
+
+std::array<Beznode,3> splitCurve(Beznode Start,Beznode End,float t)
+{
+	Beznode P1 = Start;
+	Beznode P2(0,0,0,0,0);
+	Beznode P3 = End;
+	std::array<std::vector<std::array<float,2>>,4> Points;
+	Points.at(0)={Start.getCoords(),Start.getT2Coords(),End.getT1Coords(),End.getCoords()};
+	for (int i = 1; i<=3;i++)
+	{
+		for (int j = 0;j <= 3-i;i++)
+		{
+			Points.at(i).at(j)={{Points.at(i-1).at(j).at(0)*(1-t)+Points.at(i-1).at(j+1).at(0)*t,Points.at(i-1).at(j).at(1)*(1-t)+Points.at(i-1).at(j+1).at(1)*t}};
+
+		}
+	}
+	P1.setAngle(angleFromPoints(Points.at(0).at(0),Points.at(1).at(0)));
+	P1.setTangent2(distFromPoints(Points.at(0).at(0),Points.at(1).at(0)));
+
+
+
+
+
+	return {P1,P2,P3};
+}

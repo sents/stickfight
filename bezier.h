@@ -55,10 +55,13 @@ class Bezpath
 		std::vector<Beznode> mNodes;
 };
 
-
+// Geometry utillity functions
 int triangleorient(std::array<float,2> A,std::array<float,2> C,std::array<float,2> B);
 std::vector<std::array<float,2>> hullfor4(std::array<float,2> A,std::array<float,2> C,std::array<float,2> B,std::array<float,2> D);
 std::vector<std::array<float,2>> hull(std::array<std::array<float,2>,4> Points);
-
+bool polysect(std::vector<std::array<float,2>> Poly1,std::vector<std::array<float,2>> Poly2);
+std::array<float,3> vecsec(std::array<float,2> A,std::array<float,2> B,std::array<float,2> C,std::array<float,2> D);
+float angleFromPoints(std::array<float,2> P1, std::array<float,2> P2);
+float distFromPoints(std::array<float,2> P1, std::array<float,2> P2);
 
 #endif
