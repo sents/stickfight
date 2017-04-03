@@ -12,15 +12,15 @@ class Beznode
 {
 	public:
 		Beznode(float X,float Y,float Angle,float Tangent1,float Tangent2); //Angle: Tangent Angle at Node; Tangent1/2: Distance of adjacent Bezier-points
-		std::array<float,2> getCoords(); //Get Node Coordinates (x,y)
-		float getX();
-		float getY();
-		float getAngle();
-		float getTangent1();
-		float getTangent2();
-		std::array<float,2> getT1Coords(); //Gives Coordinates of previous Bezier-point
-		std::array<float,2> getT2Coords(); //Gives Coordinates of previous Bezier-point
-		std::array<float,2> getTangent(); //Gives Tangent1 and Tangent2
+		std::array<float,2> getCoords() const; //Get Node Coordinates (x,y)
+		float getX() const;
+		float getY() const;
+		float getAngle() const;
+		float getTangent1() const;
+		float getTangent2() const;
+		std::array<float,2> getT1Coords() const; //Gives Coordinates of previous Bezier-point
+		std::array<float,2> getT2Coords() const; //Gives Coordinates of previous Bezier-point
+		std::array<float,2> getTangent() const; //Gives Tangent1 and Tangent2
 		void setCoords(std::array<float,2> Coords);
 		void setCoords(float X,float Y);
 		void setTangent1(float Tangent1);
@@ -45,14 +45,14 @@ class Bezpath
 		void translatePath(std::array<float,2> Vec);
 		void rotatePath(float X,float Y,float Angle);  //Rotate Node around Coordinate
 		void rotatePath(std::array<float,2> Vec, float Angle);
-		unsigned int get_nodecount();
+		unsigned int get_nodecount() const;
 		void insertNode(const Beznode &Node,unsigned int pos);
 		std::array<std::array<float,2>,4> controlPoints(unsigned int n);
 		void insertNode(Beznode *Node,unsigned int pos);
 		void deleteNode(unsigned int pos);
 		void pushNode(const Beznode &Node); //Add Node
 		void popNode(); //Pop Node
-		std::array<float,2> curve(float t); 
+		std::array<float,2> curve(float t) const; 
 		bool intersect(const Bezpath &Path);
 		std::vector<Beznode> mNodes;
 };

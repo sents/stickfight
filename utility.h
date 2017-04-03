@@ -25,11 +25,17 @@
 #include <stdio.h>
 #include <string>
 #include <cmath>
+#include "bezier.h"
 
 
 
 //init function
 bool init(SDL_Window** pWindow, SDL_Renderer** pRenderer, int height, int width);
+
+//bezier creation functions
+Bezpath createbezierpath(SDL_Renderer* gRenderer);
+void drawBezierPath(SDL_Renderer* renderer,const Bezpath &bPath);
+
 
 //simpleTimer class
 class simpleTimer
@@ -47,6 +53,7 @@ class simpleTimer
 		Uint32 pausedtime;
 		bool ispaused=false;
 };
+
 
 
 #endif 
