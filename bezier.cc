@@ -6,45 +6,45 @@ Beznode::Beznode(float X,float Y,float Angle,float Tangent1,float Tangent2) : mX
 }
 
 
-float Beznode::getAngle()
+float Beznode::getAngle() const
 {
 	return mAngle;
 }
 
 
-float Beznode::getX()
+float Beznode::getX() const
 {
 	return mX;
 }
 
-float Beznode::getY()
+float Beznode::getY() const
 {
 	return mY;
 }
 
-float Beznode::getTangent1()
+float Beznode::getTangent1() const
 {
 	return mTangent1;
 }
 
-float Beznode::getTangent2()
+float Beznode::getTangent2() const
 {
 	return mTangent2;
 }
 
-std::array<float,2> Beznode::getCoords()
+std::array<float,2> Beznode::getCoords() const
 {
 	return {{mX,mY}};
 }
 
 
-std::array<float,2> Beznode::getTangent()
+std::array<float,2> Beznode::getTangent() const
 {
 	std::array<float,2> Coords = {{mTangent1,mTangent2}};
 	return Coords;
 }
 
-std::array<float,2> Beznode::getT1Coords()
+std::array<float,2> Beznode::getT1Coords() const
 {
 	float PX = std::sin(mAngle/360*2*M_PI)*mTangent1+mX;
 	float PY = std::cos(mAngle/360*2*M_PI)*mTangent1+mY;
@@ -52,7 +52,7 @@ std::array<float,2> Beznode::getT1Coords()
 	return Coords;
 }
 
-std::array<float,2> Beznode::getT2Coords()
+std::array<float,2> Beznode::getT2Coords() const
 {
 	float PX = std::sin(mAngle/360*2*M_PI)*mTangent2*(-1)+mX;
 	float PY = std::cos(mAngle/360*2*M_PI)*mTangent2*(-1)+mY;
@@ -114,7 +114,7 @@ Bezpath::Bezpath(std::vector<Beznode> *Nodes)
 Bezpath::Bezpath()
 {}
 
-unsigned int Bezpath::get_nodecount()
+unsigned int Bezpath::get_nodecount() const
 {
 	return static_cast<unsigned int>(mNodes.size());
 }
@@ -169,7 +169,7 @@ std::array<std::array<float, 2>, 4> Bezpath::controlPoints(unsigned int n )
 }
 
 
-std::array<float,2> Bezpath::curve(float t)
+std::array<float,2> Bezpath::curve(float t) const
 {
 	float X;
 	float Y;
