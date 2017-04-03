@@ -34,8 +34,7 @@ float Beznode::getTangent2()
 
 std::array<float,2> Beznode::getCoords()
 {
-	std::array<float,2> Coords = {{mX,mY}};
-	return Coords;
+	return {{mX,mY}};
 }
 
 
@@ -387,7 +386,7 @@ std::array<float,3> vecsec(std::array<float,2> A,std::array<float,2> B,std::arra
 
 float angleFromPoints(std::array<float,2> P1, std::array<float,2> P2)
 {
-	return std::atan2(P2.at(1)-P1.at(1),P2.at(0)-P1.at(0));
+	return 360/(2*M_PI)*std::atan2(P2.at(1)-P1.at(1),P2.at(0)-P1.at(0));
 }
 
 float distFromPoints(std::array<float,2> P1, std::array<float,2> P2)
@@ -414,10 +413,11 @@ std::array<Beznode,3> splitCurve(Beznode Start,Beznode End,float t)
 	}
 	P1.setAngle(angleFromPoints(Points.at(0).at(0),Points.at(1).at(0)));
 	P1.setTangent2(distFromPoints(Points.at(0).at(0),Points.at(1).at(0)));
-
-
-
-
-
+	P2.setCoords(Points.at(3).at(0));
+	P2.setAngle(angleFromPoints(Points.at(2).at(0),Points.at(3).at(0)));
+	P2.setTangent1(distFromPoints(Points.at(2).at(0),Points.at(3).at(0)));
+	P2.setTangent2(distFromPoints(Points.at(2).at(1),Points.at(3).at(0)));
+	P3.setAngle(angleFromPoints(Points.at(1).at(2),Points.at(0).at(3)));
+	P3.setTangent1(distFromPoints(Points.at(1).at(2),Points.at(0).at(3)));
 	return {P1,P2,P3};
 }
