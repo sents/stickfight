@@ -40,29 +40,27 @@ std::array<float,2> Beznode::getCoords() const
 
 std::array<float,2> Beznode::getTangent() const
 {
-	std::array<float,2> Coords = {{mTangent1,mTangent2}};
-	return Coords;
+	return {{mTangent1,mTangent2}};
+
 }
 
 std::array<float,2> Beznode::getT1Coords() const
 {
-	float PX = std::sin(mAngle/360*2*M_PI)*mTangent1+mX;
-	float PY = std::cos(mAngle/360*2*M_PI)*mTangent1+mY;
-	std::array<float,2> Coords = {{PX,PY}};
-	return Coords;
+	float PX = std::sin(mAngle)*mTangent1+mX;
+	float PY = std::cos(mAngle)*mTangent1+mY;
+	return {{PX,PY}};
 }
 
 std::array<float,2> Beznode::getT2Coords() const
 {
-	float PX = std::sin(mAngle/360*2*M_PI)*mTangent2*(-1)+mX;
-	float PY = std::cos(mAngle/360*2*M_PI)*mTangent2*(-1)+mY;
-	std::array<float,2> Coords = {{PX,PY}};
-	return Coords;
+	float PX = std::sin(mAngle)*mTangent2*(-1)+mX;
+	float PY = std::cos(mAngle)*mTangent2*(-1)+mY;
+	return {{PX,PY}};
 }
 
 void Beznode::setAngle(float Angle)
 {
-	Angle -= (static_cast<int>(Angle)/360)*360;
+	Angle -= static_cast<int>(Angle/(2*M_PI))*2*M_PI;
 	mAngle=Angle;
 }
 
@@ -89,9 +87,9 @@ void Beznode::setTangent2(float Tangent2)
 }
 void Beznode::rotate(float Angle)
 {
-	if (std::abs(mAngle+Angle)>=360)
+	if (std::abs(mAngle+Angle)>=2*M_PI)
 	{
-		mAngle = (mAngle+Angle)-(static_cast<int>(mAngle+Angle)/360)*360;
+		mAngle = (mAngle+Angle)-static_cast<int>((mAngle+Angle)/(2*M_PI))*2*M_PI;
 	}
 	else
 	{
@@ -106,9 +104,9 @@ void Beznode::translate(float X,float Y)
 }
 
 //Bezpath class functions
-Bezpath::Bezpath(std::vector<Beznode> *Nodes)
+Bezpath::Bezpath(const std::vector<Beznode> &Nodes)
 {
-	mNodes=*Nodes;
+	mNodes=Nodes;
 }
 
 Bezpath::Bezpath()
@@ -144,13 +142,29 @@ void Bezpath::translatePath(std::array<float,2> Vec)
 void Bezpath::rotatePath(float X, float Y, float Angle)
 {
 
-	Angle = Angle/360*M_PI*2;
-	float R;
-	for(auto i : mNodes)
+	float R,a0;
+	for(std::vector<Beznode>::iterator i = mNodes.begin();i<mNodes.end();i++)
 	{
-		R=std::sqrt(pow(i.getX()-X,2)+pow(i.getY()-Y,2));
-		i.translate(R*std::cos(Angle)-(i.getX()-X),R*std::sin(Angle)-(i.getY()-Y));
-		i.rotate(Angle);
+		std::array<float,2> P;
+		R=distFromPoints(i->getCoords(),{X,Y});
+		
+		a0=angleFromPoints({X,Y},i->getCoords());
+		i->translate(R*(std::cos(a0+Angle)-std::cos(a0)),R*(std::sin(a0+Angle)-std::sin(a0)));
+		/*if (i->getTangent2() != 0)
+		{
+			P=i->getT2Coords();
+			P.at(0) += R*(std::cos(a0+Angle)-std::cos(a0));
+			P.at(1) += R*(std::sin(a0+Angle)-std::sin(a0));
+			i->setAngle(angleFromPoints(i->getCoords(),P));
+		}
+			
+			
+		else
+		{	P=i->getT1Coords();
+			P.at(0) += R*(std::cos(a0+Angle)-std::cos(a0));
+			P.at(1) += R*(std::sin(a0+Angle)-std::sin(a0));
+			i->setAngle(angleFromPoints(P,i->getCoords()));		}*/
+		i->rotate(Angle);
 	}
 }
 
@@ -341,8 +355,7 @@ std::vector<std::array<float,2>> hull(std::array<std::array<float,2>,4> Points)
 		}
 		else
 		{
-			out = {Points.at(0),Points.at(3)};
-			return out;
+			return {Points.at(0),Points.at(3)};
 		}
 	}
 	out = {Points.at(front+1%4),Points.at(front+2%4),Points.at(front+3%4)};
@@ -386,7 +399,7 @@ std::array<float,3> vecsec(std::array<float,2> A,std::array<float,2> B,std::arra
 
 float angleFromPoints(std::array<float,2> P1, std::array<float,2> P2)
 {
-	return 360/(2*M_PI)*std::atan2(P2.at(1)-P1.at(1),P2.at(0)-P1.at(0));
+	return std::atan2(P2.at(1)-P1.at(1),P2.at(0)-P1.at(0));
 }
 
 float distFromPoints(std::array<float,2> P1, std::array<float,2> P2)

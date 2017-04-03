@@ -40,7 +40,7 @@ class Bezpath
 {
 	public:
 		Bezpath();
-		Bezpath(std::vector<Beznode> *Nodes);
+		Bezpath(const std::vector<Beznode> &Nodes);
 		void translatePath(float X,float Y); //Translate every Node in Path
 		void translatePath(std::array<float,2> Vec);
 		void rotatePath(float X,float Y,float Angle);  //Rotate Node around Coordinate
