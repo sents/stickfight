@@ -54,7 +54,8 @@ class Bezpath
 		void pushNode(const Beznode &Node); //Add Node
 		void popNode(); //Pop Node
 		std::array<float,2> curve(float t) const; 
-		bool intersect(const Bezpath &Path,std::vector<std::array<float,2>> Poly);
+		bool intersect(std::vector<std::array<float,2>> Poly) const;
+		bool pathsect(const Bezpath &Path) const;
 		std::vector<Beznode> mNodes;
 };
 
@@ -67,7 +68,7 @@ std::array<float,3> vecsec(std::array<float,2> A,std::array<float,2> B,std::arra
 float angleFromPoints(std::array<float,2> P1, std::array<float,2> P2);
 float distFromPoints(std::array<float,2> P1, std::array<float,2> P2);
 Bezpath splitCurve(Beznode Start,Beznode End,float t);
-bool intersect(const Bezpath &Path,std::vector<std::array<float,2>> Poly);
+bool Bezsect(const Bezpath &Path,std::vector<std::array<float,2>> Poly);
 void  rotatePoints(std::vector<std::array<float,2>> &Points);
 float polyArea(std::vector<std::array<float,2>> Points);
 #endif

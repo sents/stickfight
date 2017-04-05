@@ -228,16 +228,48 @@ void Bezpath::deleteNode(unsigned int pos)
 	mNodes.erase(it+pos);
 }
 
+bool Bezpath::intersect(std::vector<std::array<float,2>> Poly) const
+{
+	return Bezsect(*this,Poly);
+}
 
-bool intersect(const Bezpath &Path,std::vector<std::array<float,2>> Poly)
+
+		
+bool Bezpath::pathsect(const Bezpath &Path) const
 {
 	bool col;
 	float minsize = .3;
 	std::vector<std::array<float,2>> curHull;
-	std::vector<Beznode> cPath = Path.mNodes;
 	Bezpath fine;
 	col = false;
-	for (std::vector<Beznode>::iterator it = cPath.begin();it<cPath.end()-1;it++)
+	for (std::vector<Beznode>::const_iterator it = mNodes.begin();it<mNodes.end()-1;it++)
+	{
+		curHull=hull({it->getCoords(),it->getT2Coords(),(it+1)->getT1Coords(),(it+1)->getCoords()});
+		if (Path.intersect(curHull) == true)
+		{
+			if (polyArea(curHull) > minsize)
+			{
+				fine = splitCurve(*it,*(it+1),.5);
+				col = fine.pathsect(Path);
+			}
+			else
+			{
+				return true;
+			}
+		}
+	}
+	return col;
+}
+
+
+bool Bezsect(const Bezpath &Path,std::vector<std::array<float,2>> Poly)
+{
+	bool col;
+	float minsize = .3;
+	std::vector<std::array<float,2>> curHull;
+	Bezpath fine;
+	col = false;
+	for (std::vector<Beznode>::const_iterator it = Path.mNodes.begin();it<Path.mNodes.end()-1;it++)
 	{
 		curHull=hull({it->getCoords(),it->getT2Coords(),(it+1)->getT1Coords(),(it+1)->getCoords()});
 		if (polysect(curHull,Poly) == true)
@@ -246,12 +278,12 @@ bool intersect(const Bezpath &Path,std::vector<std::array<float,2>> Poly)
 			if (polyArea(curHull) > minsize)
 			{
 				fine = splitCurve(*it,*(it+1),.5);
-				col = intersect(fine,Poly);
+				col = Bezsect(fine,Poly);
 
 			}
 			else
 			{
-				col=true;
+				return true;
 			}
 				
 		}
