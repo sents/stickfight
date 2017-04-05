@@ -24,6 +24,9 @@
 #include <string>
 #include <cmath>
 
+const int SCREEN_WIDTH = 800;
+const int SCREEN_HEIGHT = 600;
+
 //init function
 bool init (SDL_Window** pWindow, SDL_Renderer** pRenderer, int height, int width)
 {
@@ -121,6 +124,8 @@ Uint32 simpleTimer::get()
 		return (SDL_GetTicks() - starttime);
 }
 
+
+// function to create bezier path
 Bezpath createbezierpath(SDL_Renderer* renderer)
 {
 	int KASTENGROSSE = 5;
@@ -172,7 +177,7 @@ Bezpath createbezierpath(SDL_Renderer* renderer)
 			{
 				switch (event.key.keysym.sym)
 				{
-					case SDLK_b:
+					case SDLK_q:
 						quit = true;
 						break;
 					case SDLK_w:
@@ -186,13 +191,12 @@ Bezpath createbezierpath(SDL_Renderer* renderer)
 		}
 
 		SDL_GetMouseState(&temppos[0], &temppos[1]);
+		temppos[1] = SCREEN_HEIGHT-temppos[1];
 		SDL_SetRenderDrawColor(renderer,0xFF,0xFF,0xFF,0xFF);
 		SDL_RenderClear(renderer);
-
-
 		if( path.mNodes.size() != 0 )
 		{	
-			SDL_GetMouseState(&temppos[0],&temppos[1]);
+			
 			if(pos_or_tan)
 			{
 				tempiter->setCoords(static_cast<float>(temppos[0]),static_cast<float>(temppos[1]));
@@ -202,7 +206,7 @@ Bezpath createbezierpath(SDL_Renderer* renderer)
 				float xrel = tempiter->getX()-temppos[0];
 				float yrel = tempiter->getY()-temppos[1];
 				float tangent = pow( pow( xrel ,2) + pow( yrel ,2) ,0.5);
-				float angle = atanf(-1 * yrel/xrel)/M_PI*360;
+				float angle = atan2(-xrel,-yrel);
 				if (std::isnan(angle))
 					angle=0;
 				tempiter->setTangent1(tangent);
@@ -215,7 +219,7 @@ Bezpath createbezierpath(SDL_Renderer* renderer)
 
 				SDL_Rect objRect = {0,0,KASTENGROSSE,KASTENGROSSE};
 				objRect.x=i.getX()-KASTENGROSSE/2;
-				objRect.y=i.getY()-KASTENGROSSE/2;
+				objRect.y= SCREEN_HEIGHT - i.getY()-KASTENGROSSE/2;
 				SDL_SetRenderDrawColor(renderer,0x00,0x00,0x00,0xFF);
 				SDL_RenderFillRect(renderer,&objRect);
 			}
@@ -230,6 +234,7 @@ Bezpath createbezierpath(SDL_Renderer* renderer)
 	return path;
 }
 
+//object drawing functions
 void drawBezierPath(SDL_Renderer* renderer,const Bezpath &bPath)
 {
 	if (bPath.get_nodecount() > 1)
@@ -241,10 +246,23 @@ void drawBezierPath(SDL_Renderer* renderer,const Bezpath &bPath)
 		SDL_SetRenderDrawColor(renderer,0x00,0x00,0x00,0xFF);
 		for(int i=0; i <= count; i++)
 		{
-			points[i].x = static_cast<int>(bPath.curve(i*d)[0]);
-			points[i].y = static_cast<int>(bPath.curve(i*d)[1]);
+			points[i].x = std::round(bPath.curve(i*d)[0]);
+			points[i].y = SCREEN_HEIGHT - std::round(bPath.curve(i*d)[1]);
 		}
 				SDL_RenderDrawLines(renderer,points,count+1);
 	}
 	return;
 }
+
+void drawobjs(SDL_Renderer* Renderer, std::vector<kraftpartikel> vObj, int boxsize)
+{
+	for (auto i : vObj)
+	{
+		SDL_Rect objRect = {0,0,boxsize,boxsize};
+		objRect.x= i.getX()-boxsize/2;
+		objRect.y= SCREEN_HEIGHT - i.getY()-boxsize/2;
+		SDL_SetRenderDrawColor(Renderer,0x00,0x00,0x00,0xFF);
+		SDL_RenderFillRect(Renderer,&objRect);
+	}
+}
+

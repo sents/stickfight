@@ -26,8 +26,10 @@
 #include <string>
 #include <cmath>
 #include "bezier.h"
+#include "physobj.h"
 
-
+extern const int SCREEN_WIDTH;
+extern const int SCREEN_HEIGHT;
 
 //init function
 bool init(SDL_Window** pWindow, SDL_Renderer** pRenderer, int height, int width);
@@ -36,6 +38,8 @@ bool init(SDL_Window** pWindow, SDL_Renderer** pRenderer, int height, int width)
 Bezpath createbezierpath(SDL_Renderer* gRenderer);
 void drawBezierPath(SDL_Renderer* renderer,const Bezpath &bPath);
 
+//physobj drawing function
+void drawobjs(SDL_Renderer* Renderer, std::vector<kraftpartikel> vObj, int boxsize);
 
 //simpleTimer class
 class simpleTimer

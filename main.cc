@@ -27,11 +27,9 @@
 #include "lTexture.h"
 #include "physobj.h"
 #include "bezier.h"
+#include "stickman.h"
 
-void drawobjs(SDL_Renderer* Renderer, std::vector<kraftpartikel*> vObj);
 int KASTENGROSSE = 5;
-const int SCREEN_WIDTH = 800;
-const int SCREEN_HEIGHT = 600;
 const int FRAMERATE = 25;
 
 int main (/*int argc, char* args[])*/)
@@ -49,8 +47,9 @@ int main (/*int argc, char* args[])*/)
 	Worldframe world;
 	world.xsize = SCREEN_WIDTH;
 	world.ysize = SCREEN_HEIGHT;
-	world.gravFy = 10;
+	world.gravFy = 0;
 	std::vector<Bezpath> vBpath;
+	kraftpartikel tempPart;
 	while (quit!=true)
 	{
 		while(SDL_PollEvent(&event)!=0)
@@ -63,7 +62,7 @@ int main (/*int argc, char* args[])*/)
 				{
 					case SDLK_b:
 						vBpath.push_back(createbezierpath(gRenderer));
-						timer.reset();
+						break;
 					case SDLK_p:
 						timer.flip();
 						break;
@@ -73,8 +72,14 @@ int main (/*int argc, char* args[])*/)
 					case SDLK_i:
 						std::cout << timer.get() << "\n" << std::flush;
 						break;
+					case SDLK_w:
+						std::cout << (world.vKPartikel.end()-1)->getX() << " , " << (world.vKPartikel.end()-1)->getY() << "\n" << std::flush;
+						break;
 					case SDLK_n:
-						world.vKPartikel.push_back(new kraftpartikel(static_cast<double>(mousex), static_cast<double>(mousey)));
+						tempPart.setX(static_cast<float>(mousex));
+						tempPart.setY(static_cast<float>(SCREEN_HEIGHT - mousey));
+						world.vKPartikel.push_back(tempPart);
+						break;
 				}	
 
 			}
@@ -82,8 +87,8 @@ int main (/*int argc, char* args[])*/)
 			if (event.type == SDL_MOUSEBUTTONDOWN)
 			{
 				SDL_GetMouseState(&mousex, &mousey);
-				drawnRect.x=mousex;
-				drawnRect.y=mousey;
+				drawnRect.x=mousex-KASTENGROSSE/2;
+				drawnRect.y=mousey-KASTENGROSSE/2;
 			}
 		}
 		if (!timer.getstatus())
@@ -93,16 +98,10 @@ int main (/*int argc, char* args[])*/)
 		SDL_SetRenderDrawColor(gRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
 		SDL_RenderClear(gRenderer);
 		SDL_SetRenderDrawColor(gRenderer, 0x00, 0x00, 0x00, 0xFF);
-		drawobjs(gRenderer, world.vKPartikel);
+		drawobjs(gRenderer, world.vKPartikel, KASTENGROSSE);
 		SDL_RenderDrawRect(gRenderer, &drawnRect);
 		SDL_RenderPresent(gRenderer);
 		timer.reset();
-
-		for (auto i : vBpath)
-		{
-			drawBezierPath(gRenderer,i);
-		}
-
 		}
 	}
 
@@ -112,18 +111,6 @@ int main (/*int argc, char* args[])*/)
 	gRenderer = NULL;
 
 	return 0;
-}
-
-void drawobjs(SDL_Renderer* Renderer, std::vector<kraftpartikel*> vObj)
-{
-	for (auto i : vObj)
-	{
-		SDL_Rect objRect = {0,0,KASTENGROSSE,KASTENGROSSE};
-		objRect.x=i->getx()-KASTENGROSSE/2;
-		objRect.y=i->gety()-KASTENGROSSE/2;
-		SDL_SetRenderDrawColor(Renderer,0x00,0x00,0x00,0xFF);
-		SDL_RenderFillRect(Renderer,&objRect);
-	}
 }
 
 
