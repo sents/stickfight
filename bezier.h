@@ -11,6 +11,7 @@
 class Beznode
 {
 	public:
+		Beznode();
 		Beznode(float X,float Y,float Angle,float Tangent1,float Tangent2); //Angle: Tangent Angle at Node; Tangent1/2: Distance of adjacent Bezier-points
 		std::array<float,2> getCoords() const; //Get Node Coordinates (x,y)
 		float getX() const;
@@ -53,7 +54,7 @@ class Bezpath
 		void pushNode(const Beznode &Node); //Add Node
 		void popNode(); //Pop Node
 		std::array<float,2> curve(float t) const; 
-		bool intersect(const Bezpath &Path);
+		bool intersect(const Bezpath &Path,std::vector<std::array<float,2>> Poly);
 		std::vector<Beznode> mNodes;
 };
 
@@ -65,5 +66,8 @@ bool polysect(std::vector<std::array<float,2>> Poly1,std::vector<std::array<floa
 std::array<float,3> vecsec(std::array<float,2> A,std::array<float,2> B,std::array<float,2> C,std::array<float,2> D);
 float angleFromPoints(std::array<float,2> P1, std::array<float,2> P2);
 float distFromPoints(std::array<float,2> P1, std::array<float,2> P2);
-
+Bezpath splitCurve(Beznode Start,Beznode End,float t);
+bool intersect(const Bezpath &Path,std::vector<std::array<float,2>> Poly);
+void  rotatePoints(std::vector<std::array<float,2>> &Points);
+float polyArea(std::vector<std::array<float,2>> Points);
 #endif

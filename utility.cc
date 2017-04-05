@@ -179,7 +179,7 @@ Bezpath createbezierpath(SDL_Renderer* renderer)
 						std::cout << " x,y: " << tempiter->getX() << " , " << tempiter->getY() << "\n" << std::flush;
 						break;
 					case SDLK_r:
-						path.rotatePath(temppos[0],temppos[1],.1);
+						path.rotatePath(temppos[0],temppos[1],.01);
 				}
 
 			}
