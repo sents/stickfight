@@ -1,6 +1,10 @@
 #include "bezier.h"
 
 //Beznode class functions
+
+Beznode::Beznode(): mX(0),mY(0),mAngle(0),mTangent1(0),mTangent2(0)
+{}
+
 Beznode::Beznode(float X,float Y,float Angle,float Tangent1,float Tangent2) : mX(X),mY(Y),mAngle(Angle),mTangent1(Tangent1),mTangent2(Tangent2)
 {
 }
@@ -145,11 +149,11 @@ void Bezpath::rotatePath(float X, float Y, float Angle)
 	float R,a0;
 	for(std::vector<Beznode>::iterator i = mNodes.begin();i<mNodes.end();i++)
 	{
-		std::array<float,2> P;
-		R=distFromPoints(i->getCoords(),{X,Y});
+		R=distFromPoints({X,Y},i->getCoords());
 		
 		a0=angleFromPoints({X,Y},i->getCoords());
-		i->translate(R*(std::cos(a0+Angle)-std::cos(a0)),R*(std::sin(a0+Angle)-std::sin(a0)));
+		i->setCoords({X+R*std::cos(Angle+a0),Y+R*std::sin(Angle+a0)});
+	//	i->translate(R*(std::cos(a0+Angle)-std::cos(a0)),R*(std::sin(a0+Angle)-std::sin(a0)));
 		/*if (i->getTangent2() != 0)
 		{
 			P=i->getT2Coords();
@@ -165,6 +169,7 @@ void Bezpath::rotatePath(float X, float Y, float Angle)
 			P.at(1) += R*(std::sin(a0+Angle)-std::sin(a0));
 			i->setAngle(angleFromPoints(P,i->getCoords()));		}*/
 		i->rotate(Angle);
+	//	std::cout << "Coordinates of Point " << i-mNodes.begin() <<": X= " << i->getX() << " Y= " << i->getY() << std::endl;
 	}
 }
 
@@ -223,10 +228,67 @@ void Bezpath::deleteNode(unsigned int pos)
 	mNodes.erase(it+pos);
 }
 
-
-bool intersect(const Bezpath &Path)
+bool Bezpath::intersect(std::vector<std::array<float,2>> Poly) const
 {
-	
+	return Bezsect(*this,Poly);
+}
+
+
+		
+bool Bezpath::pathsect(const Bezpath &Path) const
+{
+	bool col;
+	float minsize = .3;
+	std::vector<std::array<float,2>> curHull;
+	Bezpath fine;
+	col = false;
+	for (std::vector<Beznode>::const_iterator it = mNodes.begin();it<mNodes.end()-1;it++)
+	{
+		curHull=hull({it->getCoords(),it->getT2Coords(),(it+1)->getT1Coords(),(it+1)->getCoords()});
+		if (Path.intersect(curHull) == true)
+		{
+			if (polyArea(curHull) > minsize)
+			{
+				fine = splitCurve(*it,*(it+1),.5);
+				col = fine.pathsect(Path);
+			}
+			else
+			{
+				return true;
+			}
+		}
+	}
+	return col;
+}
+
+
+bool Bezsect(const Bezpath &Path,std::vector<std::array<float,2>> Poly)
+{
+	bool col;
+	float minsize = .3;
+	std::vector<std::array<float,2>> curHull;
+	Bezpath fine;
+	col = false;
+	for (std::vector<Beznode>::const_iterator it = Path.mNodes.begin();it<Path.mNodes.end()-1;it++)
+	{
+		curHull=hull({it->getCoords(),it->getT2Coords(),(it+1)->getT1Coords(),(it+1)->getCoords()});
+		if (polysect(curHull,Poly) == true)
+		{
+			//cancel condition for recursion:
+			if (polyArea(curHull) > minsize)
+			{
+				fine = splitCurve(*it,*(it+1),.5);
+				col = Bezsect(fine,Poly);
+
+			}
+			else
+			{
+				return true;
+			}
+				
+		}
+	}
+	return col;
 }
 
 /*
@@ -409,7 +471,7 @@ float distFromPoints(std::array<float,2> P1, std::array<float,2> P2)
 
 
 
-std::array<Beznode,3> splitCurve(Beznode Start,Beznode End,float t)
+Bezpath splitCurve(Beznode Start,Beznode End,float t)
 {
 	Beznode P1 = Start;
 	Beznode P2(0,0,0,0,0);
@@ -432,5 +494,64 @@ std::array<Beznode,3> splitCurve(Beznode Start,Beznode End,float t)
 	P2.setTangent2(distFromPoints(Points.at(2).at(1),Points.at(3).at(0)));
 	P3.setAngle(angleFromPoints(Points.at(1).at(2),Points.at(0).at(3)));
 	P3.setTangent1(distFromPoints(Points.at(1).at(2),Points.at(0).at(3)));
-	return {P1,P2,P3};
+	Bezpath Path({P1,P2,P3});
+	return Path;
+}
+
+
+
+
+void  rotatePoints(std::vector<std::array<float,2>> &Points,std::array<float,2> rotPoint,float Angle)
+{
+
+	float R,a0;
+	for(std::vector<std::array<float,2>>::iterator i = Points.begin();i<Points.end();i++)
+	{
+		R=distFromPoints(rotPoint,*i);
+		
+		a0=angleFromPoints(rotPoint,*i);
+		*i={{rotPoint.at(0)+R*std::cos(Angle+a0),rotPoint.at(1)+R*std::sin(Angle+a0)}};
+	}
+}
+
+//Area for Polygons
+float polyArea(std::vector<std::array<float,2>> Points)
+{
+	float a=0;
+	std::array<float,2> P;
+	if (Points.size()>3)
+	{
+		a = polyArea({Points.at(0),Points.at(1),Points.at(0)});
+		Points.erase(Points.begin()+1);
+		return a+polyArea(Points);
+	}
+	else if (Points.size() == 3)
+	{			
+		rotatePoints(Points,Points.at(0),M_PI/2-angleFromPoints(Points.at(0),Points.at(1)));
+		if ((Points.at(2).at(1) > Points.at(0).at(0) && Points.at(2).at(1) < Points.at(1).at(1)) || (Points.at(2).at(1) > Points.at(1).at(0) && Points.at(2).at(1) < Points.at(0).at(1)))
+		{//Plan Points.at(0)
+			P={Points.at(0).at(0),Points.at(2).at(1)};
+			return distFromPoints(Points.at(2),P)/2*(distFromPoints(Points.at(0),P)+distFromPoints(Points.at(1),P));
+					}
+		else if (std::abs(Points.at(0).at(1)-Points.at(2).at(1)) <= std::abs(Points.at(1).at(1)-Points.at(2).at(1)))
+		{//Plan Points.at(1)
+			P={Points.at(0).at(0),Points.at(2).at(1)};
+			return distFromPoints(P,Points.at(1))*distFromPoints(P,Points.at(2))/2;
+		}
+		else
+		{//Plan Points.at(2)
+			P={Points.at(1).at(0),Points.at(2).at(1)};
+			return distFromPoints(P,Points.at(0))*distFromPoints(P,Points.at(2))/2;
+		}
+	}
+	else if (Points.size() == 2)
+	{
+		return distFromPoints(Points.at(0),Points.at(1));
+	}
+	else
+	{
+		std::cout << "polyArea needs min 2 Points! returning 0" << std::endl;
+		return 0;
+	}
+	return 0;
 }
