@@ -50,15 +50,15 @@ std::array<float,2> Beznode::getTangent() const
 
 std::array<float,2> Beznode::getT1Coords() const
 {
-	float PX = std::sin(mAngle)*mTangent1+mX;
-	float PY = std::cos(mAngle)*mTangent1+mY;
+	float PX = std::cos(mAngle)*mTangent1*(-1)+mX;
+	float PY = std::sin(mAngle)*mTangent1*(-1)+mY;
 	return {{PX,PY}};
 }
 
 std::array<float,2> Beznode::getT2Coords() const
 {
-	float PX = std::sin(mAngle)*mTangent2*(-1)+mX;
-	float PY = std::cos(mAngle)*mTangent2*(-1)+mY;
+	float PX = std::cos(mAngle)*mTangent2+mX;
+	float PY = std::sin(mAngle)*mTangent2+mY;
 	return {{PX,PY}};
 }
 

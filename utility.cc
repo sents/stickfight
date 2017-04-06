@@ -206,7 +206,7 @@ Bezpath createbezierpath(SDL_Renderer* renderer)
 				float xrel = tempiter->getX()-temppos[0];
 				float yrel = tempiter->getY()-temppos[1];
 				float tangent = pow( pow( xrel ,2) + pow( yrel ,2) ,0.5);
-				float angle = atan2(-xrel,-yrel);
+				float angle = atan2(yrel,xrel);
 				if (std::isnan(angle))
 					angle=0;
 				tempiter->setTangent1(tangent);
