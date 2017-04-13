@@ -8,6 +8,7 @@
 #include <iostream>
 #include <vector>	
 #include <array>
+#include "vec2.h"
 class Beznode
 {
 	public:
@@ -60,8 +61,6 @@ class Bezpath
 };
 
 // Geometry utillity functions
-int triangleorient(std::array<float,2> A,std::array<float,2> C,std::array<float,2> B);
-std::vector<std::array<float,2>> hullfor4(std::array<float,2> A,std::array<float,2> C,std::array<float,2> B,std::array<float,2> D);
 std::vector<std::array<float,2>> hull(std::array<std::array<float,2>,4> Points);
 bool polysect(std::vector<std::array<float,2>> Poly1,std::vector<std::array<float,2>> Poly2);
 std::array<float,3> vecsec(std::array<float,2> A,std::array<float,2> B,std::array<float,2> C,std::array<float,2> D);
@@ -69,6 +68,15 @@ float angleFromPoints(std::array<float,2> P1, std::array<float,2> P2);
 float distFromPoints(std::array<float,2> P1, std::array<float,2> P2);
 Bezpath splitCurve(Beznode Start,Beznode End,float t);
 bool Bezsect(const Bezpath &Path,std::vector<std::array<float,2>> Poly);
-void  rotatePoints(std::vector<std::array<float,2>> &Points);
+void rotatePoints(std::vector<std::array<float,2>> &Points);
 float polyArea(std::vector<std::array<float,2>> Points);
+
+
+//Helper functions
+template<typename T>
+typename T::iterator itplus(typename T::iterator itStart,typename T::iterator itNow, int size, int plus)
+{
+	return itStart+(itNow-itStart+plus)%size;
+}
+
 #endif

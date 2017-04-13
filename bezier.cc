@@ -153,23 +153,7 @@ void Bezpath::rotatePath(float X, float Y, float Angle)
 		
 		a0=angleFromPoints({X,Y},i->getCoords());
 		i->setCoords({X+R*std::cos(Angle+a0),Y+R*std::sin(Angle+a0)});
-	//	i->translate(R*(std::cos(a0+Angle)-std::cos(a0)),R*(std::sin(a0+Angle)-std::sin(a0)));
-		/*if (i->getTangent2() != 0)
-		{
-			P=i->getT2Coords();
-			P.at(0) += R*(std::cos(a0+Angle)-std::cos(a0));
-			P.at(1) += R*(std::sin(a0+Angle)-std::sin(a0));
-			i->setAngle(angleFromPoints(i->getCoords(),P));
-		}
-			
-			
-		else
-		{	P=i->getT1Coords();
-			P.at(0) += R*(std::cos(a0+Angle)-std::cos(a0));
-			P.at(1) += R*(std::sin(a0+Angle)-std::sin(a0));
-			i->setAngle(angleFromPoints(P,i->getCoords()));		}*/
 		i->rotate(Angle);
-	//	std::cout << "Coordinates of Point " << i-mNodes.begin() <<": X= " << i->getX() << " Y= " << i->getY() << std::endl;
 	}
 }
 
@@ -291,136 +275,52 @@ bool Bezsect(const Bezpath &Path,std::vector<std::array<float,2>> Poly)
 	return col;
 }
 
-/*
-std::array<float,3> Bezpath::koeff(int n)
-{
-	float P0X = mNodes.at(n).getX();
-	float P1X = mNodes.at(n).getT2Coords().at(0);
-	float P2X = mNodes.at(n+1).getT1Coords().at(0);
-	float P3X = mNodes.at(n+1).getX();
-	float P0Y = mNodes.at(n).getY();
-	float P1Y = mNodes.at(n).getT2Coords().at(1);
-	float P2Y = mNodes.at(n+1).getT1Coords().at(1);
-	float P3Y = mNodes.at(n+1).getY();
-	std::<float,3> vec = {{P}}
-
-}
-*/
-
-int triangleorient(std::array<float,2> A,std::array<float,2> C,std::array<float,2> B)
-{
-	float result = B[0]*C[1]-B[1]*C[0]-B[0]*A[1]+B[1]*A[0]-C[1]*A[0]+C[0]*A[1];
-	if (result<0)
-	{return -1;}
-	else if (result>0)
-	{return 1;}
-	else
-	{return 0;}
-}
-
-std::vector<std::array<float,2>> hullfor4(std::array<float,2> A,std::array<float,2> C,std::array<float,2> B,std::array<float,2> D)
-{
-	std::vector<std::array<float,2>> hull;
-	//Checking Orientation of partial triangles
-	int triangle_ABC=triangleorient(A,B,C);
-	int triangle_ABD=triangleorient(A,B,D);
-	int triangle_BCD=triangleorient(B,C,D);
-	int triangle_CAD=triangleorient(C,A,D);
-	int zahl= triangle_ABC+triangle_ABD+triangle_BCD+triangle_CAD;
-	if (abs(zahl) == 4)
-	{
-		hull.push_back(A);
-		hull.push_back(B);
-		hull.push_back(C);
-
-	}
-	else if (abs(zahl) == 3)
-	{
-		hull.push_back(A);
-		hull.push_back(B);
-		hull.push_back(C);
-		hull.push_back(D);
-	}
-	else if (abs(zahl) == 2)
-	{
-		if (triangle_ABC == triangle_ABD)
-		{
-			hull.push_back(A);
-			hull.push_back(B);
-			hull.push_back(D);
-		}
-		if (triangle_ABC == triangle_BCD)
-		{
-			hull.push_back(B);
-			hull.push_back(C);
-			hull.push_back(D);
-		}
-		if (triangle_ABC == triangle_CAD)
-		{
-			hull.push_back(C);
-			hull.push_back(A);
-			hull.push_back(D);
-		}
-	}
-	else
-	{
-	       	hull.push_back(A);
-		hull.push_back(B);
-	}
-	return hull;
-}
 
 
 std::vector<std::array<float,2>> hull(std::array<std::array<float,2>,4> Points)
 {
 	float det;
 	float x0,x1;
+	bool dcount=false;
 	int front = 0;
+	std::array<float,3> inter;
 	std::vector<std::array<float,2>> out;
 	for (std::array<std::array<float,2>,4>::iterator i=Points.begin()+1;i<Points.end();i++)
 	{
-		std::array<float,3> inter = vecsec(Points.at(0),*i,*(Points.begin()+(i-Points.begin()+1)%3),*(Points.begin()+(i-Points.begin()+2)%3));
-		/*
-		a=Points.at(0).at(0)-i->at(0);
-		
-		b=((Points.begin()+(i-Points.begin()+2)%3)->at(0)-(Points.begin()+(i-Points.begin()+1)%3)->at(0));
-		c=Points.at(0).at(1)-i->at(0);
-		d=((Points.begin()+(i-Points.begin()+2)%3)->at(1)-(Points.begin()+(i-Points.begin()+1)%3)->at(1));
-		det=a*d-b*c;
-		y0=Points.at(0).at(0)-(Points.begin()+(i-Points.begin()+1)%3)->at(0);
-		y1=Points.at(0).at(1)-(Points.begin()+(i-Points.begin()+1)%3)->at(1);
-		*/
+		inter = vecsec(Points.at(0),*i,*(Points.begin()+1+(i-(Points.begin()+1)+1)%3),*(Points.begin()+1+(i-(Points.begin()+1)+2)%3));
 		det = inter.at(0);
 		x0 = inter.at(1);
 		x1 = inter.at(2);
 		if (det!=0)
 		{
-			//x0=(y0*d-b*y1)/det;
-			//x1=(a*y1-c*y0)/det;
-			if (x0 >= 0 && x0<=1 && x1 >= 0 && x1 <= 0) //if true then quadrangle with AI and I+1I+2 intersection
+			if (x0 > 0 && x0<1 && x1 > 0 && x1 < 1) //if true then quadrangle with AI and I+1I+2 intersection
 			{
-				out = {Points.at(0),*(Points.begin()+(i-Points.begin()+1)%3),*i,*(Points.begin()+(i-Points.begin()+1)%3)};
+				out = {Points.at(0),*(Points.begin()+1+(i-(Points.begin()+1)+1)%3),*i,*(Points.begin()+1+(i-(Points.begin()+1)+2)%3)};
 				return out;
 			}
 			else if (x0 == 0)
-			{
+			{	
 				out = {Points.at(1),Points.at(2),Points.at(3)};
 				return out;
 			}
 			else if (x0 == 1 && x1 <= 1 && x1 >= 0)
 			{
-				out = {Points.at(0),*(Points.begin()+(i-Points.begin()+1)%3),*(Points.begin()+(i-Points.begin()+2)%3)};
+				out = {Points.at(0),*(Points.begin()+1+(i-(Points.begin()+1)+1)%3),*(Points.begin()+1+(i-(Points.begin()+1)+2)%3)};
 			}
-			else if (x0 >= 1)
-			{front = i-Points.begin()+1; 
+			else if (x0 > 1)
+			{front = i-Points.begin(); 
 			}
 		}
 		else
 		{
-			return {Points.at(0),Points.at(3)};
+			dcount = true;
 		}
 	}
-	out = {Points.at(front+1%4),Points.at(front+2%4),Points.at(front+3%4)};
+	if (dcount==true)
+	{
+			return {Points.at(0),Points.at(3)};
+	}
+	out = {Points.at((front+1)%4),Points.at((front+2)%4),Points.at((front+3)%4)};
 	return out;
 }
 
@@ -450,12 +350,12 @@ bool polysect(std::vector<std::array<float,2>> Poly1,std::vector<std::array<floa
 
 std::array<float,3> vecsec(std::array<float,2> A,std::array<float,2> B,std::array<float,2> C,std::array<float,2> D)
 {
-	float det = (A.at(0)-B.at(1))*(D.at(1)-C.at(1))-(A.at(1)-B.at(1))*(D.at(0)-C.at(0));
+	float det = (A.at(0)-B.at(0))*(D.at(1)-C.at(1))-(A.at(1)-B.at(1))*(D.at(0)-C.at(0));
 	if (det==0)
 	{	return {{0,0,0}};}
 //	float x0 = (D.at(1)-C.at(1))*(A.at(0)-C.at(1))+(C.at(0)-D.at(1))*(A.at(1)-C.at(1));
 //	float x1 = (B.at(1)-A.at(1))*(A.at(0)-C.at(1))+(A.at(0)-B.at(0))*(A.at(1)-C.at(1));
-	return {{det, (D.at(1)-C.at(1))*(A.at(0)-C.at(1))+(C.at(0)-D.at(1))*(A.at(1)-C.at(1)) ,(B.at(1)-A.at(1))*(A.at(0)-C.at(1))+(A.at(0)-B.at(0))*(A.at(1)-C.at(1))}};
+	return {{det, ((D.at(1)-C.at(1))*(A.at(0)-C.at(0))+(C.at(0)-D.at(0))*(A.at(1)-C.at(1)))/det ,((B.at(1)-A.at(1))*(A.at(0)-C.at(0))+(A.at(0)-B.at(0))*(A.at(1)-C.at(1)))/det}};
 }
 
 
@@ -521,28 +421,15 @@ float polyArea(std::vector<std::array<float,2>> Points)
 	std::array<float,2> P;
 	if (Points.size()>3)
 	{
-		a = polyArea({Points.at(0),Points.at(1),Points.at(0)});
+		a = polyArea({Points.at(0),Points.at(1),Points.at(2)});
 		Points.erase(Points.begin()+1);
 		return a+polyArea(Points);
 	}
 	else if (Points.size() == 3)
 	{			
 		rotatePoints(Points,Points.at(0),M_PI/2-angleFromPoints(Points.at(0),Points.at(1)));
-		if ((Points.at(2).at(1) > Points.at(0).at(0) && Points.at(2).at(1) < Points.at(1).at(1)) || (Points.at(2).at(1) > Points.at(1).at(0) && Points.at(2).at(1) < Points.at(0).at(1)))
-		{//Plan Points.at(0)
-			P={Points.at(0).at(0),Points.at(2).at(1)};
-			return distFromPoints(Points.at(2),P)/2*(distFromPoints(Points.at(0),P)+distFromPoints(Points.at(1),P));
-					}
-		else if (std::abs(Points.at(0).at(1)-Points.at(2).at(1)) <= std::abs(Points.at(1).at(1)-Points.at(2).at(1)))
-		{//Plan Points.at(1)
-			P={Points.at(0).at(0),Points.at(2).at(1)};
-			return distFromPoints(P,Points.at(1))*distFromPoints(P,Points.at(2))/2;
-		}
-		else
-		{//Plan Points.at(2)
-			P={Points.at(1).at(0),Points.at(2).at(1)};
-			return distFromPoints(P,Points.at(0))*distFromPoints(P,Points.at(2))/2;
-		}
+		P={Points.at(0).at(0),Points.at(2).at(1)};
+		return distFromPoints(Points.at(2),P)*distFromPoints(Points.at(0),Points.at(1))/2;
 	}
 	else if (Points.size() == 2)
 	{
