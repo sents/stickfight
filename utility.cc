@@ -150,7 +150,7 @@ Bezpath createbezierpath(SDL_Renderer* renderer)
 			if(event.type == SDL_MOUSEBUTTONDOWN)
 			{
 				
-				if (path.mNodes.size() == 0)
+				if (path.get_nodecount() == 0)
 				{
 					tempnode.setCoords(static_cast<float>(temppos[0]),static_cast<float>(temppos[1]));
 					path.pushNode(tempnode);
@@ -194,7 +194,7 @@ Bezpath createbezierpath(SDL_Renderer* renderer)
 		temppos[1] = SCREEN_HEIGHT-temppos[1];
 		SDL_SetRenderDrawColor(renderer,0xFF,0xFF,0xFF,0xFF);
 		SDL_RenderClear(renderer);
-		if( path.mNodes.size() != 0 )
+		if( path.get_nodecount() != 0 )
 		{	
 			
 			if(pos_or_tan)
@@ -246,8 +246,8 @@ void drawBezierPath(SDL_Renderer* renderer,const Bezpath &bPath)
 		SDL_SetRenderDrawColor(renderer,0x00,0x00,0x00,0xFF);
 		for(int i=0; i <= count; i++)
 		{
-			points[i].x = std::round(bPath.curve(i*d)[0]);
-			points[i].y = SCREEN_HEIGHT - std::round(bPath.curve(i*d)[1]);
+			points[i].x = std::round(bPath.curve(i*d).X);
+			points[i].y = SCREEN_HEIGHT - std::round(bPath.curve(i*d).Y);
 		}
 				SDL_RenderDrawLines(renderer,points,count+1);
 	}
