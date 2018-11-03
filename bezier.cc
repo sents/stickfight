@@ -276,7 +276,7 @@ void polanticlock(std::vector<vec2> & Points)
 	{
 		if (Points.at(0).xTo(Points.at(1))<0)
 		{
-			Points.crbegin
+			Points.crbegin();
 		}
 	}
 }

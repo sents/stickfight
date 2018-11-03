@@ -24,8 +24,8 @@
 #include <string>
 #include <cmath>
 
-const int SCREEN_WIDTH = 800;
-const int SCREEN_HEIGHT = 600;
+const int SCREEN_WIDTH = 1000;
+const int SCREEN_HEIGHT = 750;
 
 //init function
 bool init (SDL_Window** pWindow, SDL_Renderer** pRenderer, int height, int width)
@@ -82,7 +82,14 @@ simpleTimer::simpleTimer()
 
 void simpleTimer::reset()
 {
-		starttime=SDL_GetTicks();
+    if(!ispaused)
+    {
+        starttime=SDL_GetTicks();
+    }
+    else
+    {
+        pausedtime = SDL_GetTicks();
+    }
 }
 
 void simpleTimer::pause()
@@ -98,8 +105,8 @@ void simpleTimer::unpause()
 {
 	if(ispaused)
 	{
-	starttime = starttime + (SDL_GetTicks() - pausedtime);
-	ispaused = false;
+            starttime = starttime + (SDL_GetTicks() - pausedtime);
+            ispaused = false;
 	}
 }
 
@@ -254,15 +261,22 @@ void drawBezierPath(SDL_Renderer* renderer,const Bezpath &bPath)
 	return;
 }
 
+void drawobj(SDL_Renderer* Renderer, kraftpartikel* Obj, int boxsize)
+{
+    SDL_Rect objRect = {0,0,boxsize,boxsize};
+    objRect.x= Obj->getX()-boxsize/2;
+    objRect.y= SCREEN_HEIGHT - Obj->getY()-boxsize/2;
+    std::array<Uint8,4> color = Obj->color;
+    std::cout << unsigned(color.at(0)) << "\n" << std::flush;// << Obj->color[1] << Obj->color[2] << Obj->color[3] << "\n" << std::flush;
+    SDL_SetRenderDrawColor(Renderer, color.at(0), color.at(1), color.at(2), color.at(3));
+    SDL_RenderFillRect(Renderer,&objRect);
+}
+
 void drawobjs(SDL_Renderer* Renderer, std::vector<kraftpartikel> vObj, int boxsize)
 {
-	for (auto i : vObj)
+	for (auto it = begin(vObj); it != end(vObj); ++it)
 	{
-		SDL_Rect objRect = {0,0,boxsize,boxsize};
-		objRect.x= i.getX()-boxsize/2;
-		objRect.y= SCREEN_HEIGHT - i.getY()-boxsize/2;
-		SDL_SetRenderDrawColor(Renderer,0x00,0x00,0x00,0xFF);
-		SDL_RenderFillRect(Renderer,&objRect);
-	}
+            drawobj(Renderer, &(*it), boxsize);
+        }
 }
 

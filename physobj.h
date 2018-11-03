@@ -26,6 +26,7 @@
 #include <array>
 #include <vector>
 #include "physobj.h"
+#include "vec2.h"
 
 class physobj
 {
@@ -40,13 +41,11 @@ class physobj
 		int setyvel(float y);
 		physobj(float x=0, float y=0, float vx=0, float vy=0);
 		~physobj();
-
+		vec2 pos;
+		vec2 vel;
+                std::array<Uint8,4> color = {0x00,0x00,0x00,0xFF};
 
 	private:
-		float xpos;
-		float ypos;
-		float xvel;
-		float yvel;
 };
 
 
@@ -66,8 +65,7 @@ class kraftpartikel : public physobj
 		void setCharge(float q);
 
 	private:
-		float Fx;
-		float Fy;
+		vec2 F;
 		float mMass=1;
 		float mCharge=1;
 
@@ -78,16 +76,15 @@ class kraftpartikel : public physobj
 class Worldframe
 {
 	public:
-		bool flag=true;
 		void iterate(float t);
+                Worldframe(float coulombfaktor, float gravFx, float gravFy);
+                Worldframe();
 		~Worldframe();
 
-		float xsize = 0; 
-		float ysize = 0; 
+		vec2 size; 
+		vec2 gravF;
 		float coulombfaktor = 40000;
-		float gravFx = 0;
-		float gravFy = 2000;
-
+                float getEnergy();
 		std::vector<kraftpartikel> vKPartikel;
 	private:
 		void radialForce(kraftpartikel* part1, kraftpartikel* part2, float kraftfaktor, float exponent); //radialkraft part2 auf part1. Form: F^{->} = e^{^}_{r} * kraftfaktor * r^{exponent}
@@ -95,6 +92,7 @@ class Worldframe
 		void gravitationalForce(kraftpartikel* part, float Fx, float Fy); //In bestimmte Richtung gerichtete kraft.
 		bool collisioncheck(physobj* part1, physobj* part2);
 		bool isoutofworld(const physobj& part) const;
+                void periodicboundary(physobj* part);
 };
 
 #endif

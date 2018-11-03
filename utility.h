@@ -19,12 +19,12 @@
 #ifndef INIT_H
 #define INIT_H
 
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_image.h>
 #include <iostream>
 #include <stdio.h>
 #include <string>
 #include <cmath>
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_image.h>
 #include "bezier.h"
 #include "physobj.h"
 
@@ -39,6 +39,7 @@ Bezpath createbezierpath(SDL_Renderer* gRenderer);
 void drawBezierPath(SDL_Renderer* renderer,const Bezpath &bPath);
 
 //physobj drawing function
+void drawobj(SDL_Renderer* Renderer, kraftpartikel* Obj, int boxsize);
 void drawobjs(SDL_Renderer* Renderer, std::vector<kraftpartikel> vObj, int boxsize);
 
 //simpleTimer class
@@ -51,8 +52,8 @@ class simpleTimer
 		void flip();
 		bool getstatus();
 		Uint32 get(); //Time in milliseconds
-		simpleTimer();
-		private:
+                simpleTimer();
+                private:
 		Uint32 starttime;
 		Uint32 pausedtime;
 		bool ispaused=false;

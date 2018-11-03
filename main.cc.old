@@ -1,0 +1,116 @@
+/*
+ * =====================================================================================
+ *
+ *       Filename:  main.cc
+ *
+ *    Description:  A simple fighting game
+ *
+ *        Version:  1.0
+ *        Created:  21.03.2017 16:39:34
+ *       Revision:  none
+ *       Compiler:  gcc
+ *
+ *         Author:  Finn Krein, finnkrein@googlemail.com; Arvid Krein, arvid2000@googlemail.com
+ *        Company:  -
+ *
+ * =====================================================================================
+ */
+
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_image.h>
+#include <iostream>
+#include <cstdio>
+#include <string>
+#include <cmath>
+#include <vector>
+#include "utility.h"
+#include "lTexture.h"
+#include "physobj.h"
+#include "bezier.h"
+#include "stickman.h"
+
+int KASTENGROSSE = 5;
+const int FRAMERATE = 25;
+
+int main ()
+{
+	SDL_Window* gWindow;
+	SDL_Renderer* gRenderer;
+	init(&gWindow,&gRenderer, SCREEN_HEIGHT, SCREEN_WIDTH);
+
+	bool quit=false;
+	SDL_Event event;
+	simpleTimer timer;
+	int mousex;
+	int mousey;
+	SDL_Rect drawnRect = {SCREEN_WIDTH/2, SCREEN_HEIGHT/2, 4 ,4};
+	Worldframe world;
+	world.xsize = SCREEN_WIDTH;
+	world.ysize = SCREEN_HEIGHT;
+	world.gravFy = 0;
+	std::vector<Bezpath> vBpath;
+	kraftpartikel tempPart;
+	while (quit!=true)
+	{
+		while(SDL_PollEvent(&event)!=0)
+		{
+			if(event.type == SDL_QUIT)
+				quit=true;
+			if(event.type == SDL_KEYDOWN)
+			{
+				switch (event.key.keysym.sym)
+				{
+					case SDLK_b:
+						vBpath.push_back(createbezierpath(gRenderer));
+						break;
+					case SDLK_p:
+						timer.flip();
+						break;
+					case SDLK_o:
+						timer.reset();
+						break;
+					case SDLK_i:
+						std::cout << timer.get() << "\n" << std::flush;
+						break;
+					case SDLK_w:
+						std::cout << (world.vKPartikel.end()-1)->getX() << " , " << (world.vKPartikel.end()-1)->getY() << "\n" << std::flush;
+						break;
+					case SDLK_n:
+						tempPart.setX(static_cast<float>(mousex));
+						tempPart.setY(static_cast<float>(SCREEN_HEIGHT - mousey));
+						world.vKPartikel.push_back(tempPart);
+						break;
+				}	
+
+			}
+
+			if (event.type == SDL_MOUSEBUTTONDOWN)
+			{
+				SDL_GetMouseState(&mousex, &mousey);
+				drawnRect.x=mousex-KASTENGROSSE/2;
+				drawnRect.y=mousey-KASTENGROSSE/2;
+			}
+		}
+		if (!timer.getstatus())
+		world.iterate(1e-5);
+		if( timer.get() >= (1000/FRAMERATE) )
+		{
+		SDL_SetRenderDrawColor(gRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
+		SDL_RenderClear(gRenderer);
+		SDL_SetRenderDrawColor(gRenderer, 0x00, 0x00, 0x00, 0xFF);
+		drawobjs(gRenderer, world.vKPartikel, KASTENGROSSE);
+		SDL_RenderDrawRect(gRenderer, &drawnRect);
+		SDL_RenderPresent(gRenderer);
+		timer.reset();
+		}
+	}
+
+	SDL_DestroyWindow(gWindow);
+	SDL_DestroyRenderer(gRenderer);
+	gWindow = NULL;
+	gRenderer = NULL;
+
+	return 0;
+}
+
+

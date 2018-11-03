@@ -18,14 +18,18 @@
 
 #include "physobj.h"
 
+inline float realmod (float x, float y)
+{
+  float result = fmod(x, y);
+  return result >= 0 ? result : result + y;
+}
+
 //physobj Functions
 
 physobj::physobj(float x, float y, float vx, float vy)
 {
-	xpos = x;
-	ypos = y;
-	xvel = vx;
-	yvel = vy;
+	pos = {x, y};
+	vel = {vx, vy};
 }
 
 
@@ -35,45 +39,45 @@ physobj::~physobj()
 
 float physobj::getX() const
 {
-	return xpos;
+	return pos.X;
 }
 
 float physobj::getY() const
 {
-	return ypos;
+	return pos.Y;
 }
 
 int physobj::setX(float x)
 {
-	xpos = x;
+	pos.X = x;
 	return 1;
 }
 
 int physobj::setY(float y)
 {
-	ypos = y;
+	pos.Y = y;
 	return 1;
 }
 
 float physobj::getxvel() const
 {
-	return xvel;
+	return vel.X;
 }
 
 float physobj::getyvel() const
 {
-	return yvel;
+	return vel.Y;
 }
 
 int physobj::setxvel (float vx)
 {
-	xvel = vx;
+        vel.X = vx;
 	return 1;
 }
 
 int physobj::setyvel(float vy)
 {
-	yvel = vy;
+	vel.Y = vy;
 	return 1;
 }
 
@@ -87,12 +91,12 @@ kraftpartikel::kraftpartikel(float x, float y, float mass, float charge) : physo
 
 float kraftpartikel::getFx() const
 {
-	return Fx;
+	return F.X;
 }
 
 float kraftpartikel::getFy() const
 {
-	return Fy;
+	return F.Y;
 }
 float kraftpartikel::getMass() const
 {
@@ -104,14 +108,14 @@ float kraftpartikel::getCharge() const
 	return mCharge;
 }
 
-void kraftpartikel::setFx(float F)
+void kraftpartikel::setFx(float Fx)
 {
-	Fx = F;
+	F.X = Fx;
 }
 
-void kraftpartikel::setFy(float F)
+void kraftpartikel::setFy(float Fy)
 {
-	Fy = F;
+	F.Y = Fy;
 }
 
 void kraftpartikel::setMass(float m)
@@ -132,13 +136,23 @@ void kraftpartikel::iterate(float t) //iteration of simulation
 {
 	setY( getY() + t * getyvel() ); //Iterate Position with velocity
 	setX( getX() + t * getxvel() );
-	setyvel( getyvel() + t * Fy / mMass ); //Iterate velocity with force
-	setxvel( getxvel() + t * Fx / mMass );
+	setyvel( getyvel() + t * F.Y / mMass ); //Iterate velocity with force
+	setxvel( getxvel() + t * F.X / mMass );
 	return;
 }
 
 
 //Worldframe class functions
+Worldframe::Worldframe()
+{
+}
+
+Worldframe::Worldframe(float tcoulombfaktor, float tgravFx, float tgravFy)
+{
+    coulombfaktor = tcoulombfaktor;
+    gravF.Y = tgravFy;
+    gravF.X = tgravFx;
+}
 
 Worldframe::~Worldframe()
 {
@@ -154,7 +168,7 @@ void Worldframe::iterate(float t)
 		}
 		if (isoutofworld(*i))
 		{
-			vKPartikel.erase(i);
+			periodicboundary(&*i);
 		}
 	}
 
@@ -170,7 +184,7 @@ void Worldframe::iterate(float t)
 			//radialForce(&*i,&*j,-9*coulombfaktor,-5.);
 			}
 		}
-		gravitationalForce(&*i,gravFx,gravFy);
+		gravitationalForce(&*i,gravF.X,gravF.Y);
 		i->iterate(t);
 	}
 }
@@ -191,39 +205,34 @@ void Worldframe::gravitationalForce(kraftpartikel* part, float Fx, float Fy)
 
 void Worldframe::elasticBounce(kraftpartikel* part1, kraftpartikel* part2)
 {
-	std::cout << part1->getxvel() +part2->getxvel() << " , " << part1->getyvel() + part2->getyvel() << "\n" << std::flush; 
-	float faktor = 5;
-	float xverb = part2->getX() - part1->getX();
-	float yverb = part2->getY() - part1->getY();
-	float r = pow(pow(xverb,2)+pow(yverb,2),0.5);
-	std::array<float,2> v1temp;
-	std::array<float,2> v2temp;
-	if ( r <= faktor && flag)
+        vec2 r1 = part1->pos;
+        vec2 r2 = part2->pos;
+        vec2 v1 = part1->vel;
+        vec2 v2 = part2->vel;
+        float m1 = part1->getMass();
+        float m2 = part2->getMass();
+
+	float faktor = 10;
+        vec2 rrel = r2 - r1;
+        vec2 vrel = v2 - v1;
+	float r = rrel.abs();
+        float vrelr = rrel * vrel;
+
+	if ( (r <= faktor) && (vrelr < 0) )
 	{
-	v1temp[0] = part1->getxvel() * ( 1 - part2->getMass() / ( part1->getMass() + part2->getMass() ) ) + part2->getxvel() * 2 * part2->getMass() / ( part1->getMass() +  part2->getMass() ) ;
-	v1temp[1] = part1->getyvel() * ( 1 - part2->getMass() / ( part1->getMass() + part2->getMass() ) ) + part2->getyvel() * 2 * part2->getMass() / ( part1->getMass() +  part2->getMass() ) ;
-	v2temp[0] = part2->getxvel() * ( 1 - part1->getMass() / ( part1->getMass() + part2->getMass() ) ) + part1->getxvel() * 2 * part1->getMass() / ( part1->getMass() +  part2->getMass() ) ;
-	v2temp[1] = part2->getyvel() * ( 1 - part1->getMass() / ( part1->getMass() + part2->getMass() ) ) + part1->getyvel() * 2 * part1->getMass() / ( part1->getMass() +  part2->getMass() ) ;
-	std::cout << v1temp[0] + v2temp[0] << " , " << v1temp[1] + v2temp[1] << "\n" << std::flush; 
-	part1->setxvel(v1temp[0]);
-	part1->setyvel(v1temp[1]);
-	part2->setxvel(v2temp[0]);
-	part2->setyvel(v2temp[1]);
-	r/=faktor;
-	/*part1->setX(part1->getX() - xverb/r);
-	part1->setX(part1->getX() - xverb/r);
-	part1->setX(part1->getX() - xverb/r);
-	part1->setX(part1->getX() - xverb/r);*/
-	flag=false;
-	}
+
+        part1->vel = (1 / (m1 + m2)) * (m1 * v1 + m2 * v2 - m2 * (v1 - v2)) ;
+        part2->vel = (1 / (m1 + m2)) * (m1 * v1 + m2 * v2 - m1 * (v2 - v1));
+
+        }
 }
 
 bool Worldframe::isoutofworld(const physobj& part) const
 {
 	bool flag = false;
-	if ( part.getX() >= xsize || part.getX() <= 0 )
+	if ( part.getX() >= size.X || part.getX() <= 0 )
 		flag = true;
-	if ( part.getY() >= ysize || part.getY() <= 0 )
+	if ( part.getY() >= size.Y || part.getY() <= 0 )
 		flag = true;
 	return flag;
 
@@ -232,4 +241,20 @@ bool Worldframe::isoutofworld(const physobj& part) const
 bool Worldframe::collisioncheck(physobj* part1, physobj* part2)
 {
 	return pow( pow( part2->getX() - part1->getX() , 2 ) + pow( part2->getY() - part1->getY() , 2) , 0.5 ) <= 1. ;
+}
+
+void Worldframe::periodicboundary(physobj* part)
+{
+    part->setX( realmod( ( part->getX() ), size.X  ) );
+    part->setY( realmod( ( part->getY() ), size.Y ) );
+}
+
+float Worldframe::getEnergy()
+{
+    float T = 0;
+    for ( auto i = vKPartikel.begin(); i < vKPartikel.end(); i++)
+    {
+        T += pow( i->getxvel(), 2 ) + pow( i->getyvel(), 2);
+    }
+    return T;
 }

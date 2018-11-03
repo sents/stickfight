@@ -98,11 +98,17 @@ float operator*(const vec2 & lhs,const vec2 & rhs)
 	return lhs.X*rhs.X+lhs.Y*rhs.Y;
 }
 
-vec2 operator*(float rhs,vec2 lhs)
+vec2 operator*(float lhs, vec2 rhs)
 {
-	lhs *= rhs;
-	return lhs;
+	rhs *= lhs;
+	return rhs;
 }
+
+vec2 operator*(vec2 lhs, float rhs)
+{
+return rhs * lhs;
+}
+
 
 vec2 operator*(const mat2 & M,const vec2 & x)
 {
