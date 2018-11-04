@@ -14,6 +14,10 @@ float vec2::abs() const
 {
 	return std::sqrt(pow(X,2)+pow(Y,2));
 }
+float vec2::abspow2() const
+{
+	return pow(X,2)+pow(Y,2);
+}
 
 
 float vec2::angle() const

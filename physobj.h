@@ -43,7 +43,7 @@ class physobj
 		~physobj();
 		vec2 pos;
 		vec2 vel;
-                std::array<Uint8,4> color = {0x00,0x00,0x00,0xFF};
+                std::array<unsigned short,4> color = {0x00,0x00,0x00,0xFF};
 
 	private:
 };
@@ -63,9 +63,9 @@ class kraftpartikel : public physobj
 		void setFy(float F);
 		void setMass(float m);
 		void setCharge(float q);
+		vec2 F;
 
 	private:
-		vec2 F;
 		float mMass=1;
 		float mCharge=1;
 
@@ -86,6 +86,7 @@ class Worldframe
 		float coulombfaktor = 40000;
                 float getEnergy();
 		std::vector<kraftpartikel> vKPartikel;
+                int bouncetype = 1;
 	private:
 		void radialForce(kraftpartikel* part1, kraftpartikel* part2, float kraftfaktor, float exponent); //radialkraft part2 auf part1. Form: F^{->} = e^{^}_{r} * kraftfaktor * r^{exponent}
 		void elasticBounce(kraftpartikel* part1, kraftpartikel* part2);
@@ -93,6 +94,7 @@ class Worldframe
 		bool collisioncheck(physobj* part1, physobj* part2);
 		bool isoutofworld(const physobj& part) const;
                 void periodicboundary(physobj* part);
+                void wallbounce(physobj* part);
 };
 
 #endif

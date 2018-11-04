@@ -29,7 +29,7 @@
 #include "stickman.h"
 
 int KASTENGROSSE = 5;
-const int FRAMERATE = 25;
+const int FRAMERATE = 30;
 
 int main ()
 {
@@ -54,6 +54,7 @@ int main ()
         std::vector<kraftpartikel>::iterator vKpointer = world.vKPartikel.begin();
 	while (quit!=true)
 	{
+                SDL_Delay(1);
 		while(SDL_PollEvent(&event)!=0)
 		{
 			if(event.type == SDL_QUIT)
@@ -75,7 +76,7 @@ int main ()
 						std::cout << timer.get() << "\n" << std::flush;
 						break;
 					case SDLK_w:
-						std::cout << (world.vKPartikel.end()-1)->getX() << " , " << (world.vKPartikel.end()-1)->getY() << "\n" << std::flush;
+						std::cout << vKpointer->getX() << " , " << vKpointer->getY() << "\n" << std::flush;
 						break;
 					case SDLK_n:
 						tempPart.setX(static_cast<float>(mousex));
@@ -96,14 +97,14 @@ int main ()
                                                 vKpointer->setyvel( vKpointer->getyvel() - 5);
                                                 break;
                                         case SDLK_PLUS:
-                                                //vKpointer->color = {0xFF,0x00,0x00,0xFF};
+                                                vKpointer->color = {0x00,0x00,0x00,0xFF};
                                                 vKpointer+=1;
-                                                //vKpointer->color = {0xFF,0x00,0x00,0xFF}; 
+                                                vKpointer->color = {0xFF,0x00,0x00,0xFF}; 
                                                 break;
                                         case SDLK_MINUS:
-                                                //vKpointer->color = {0xFF,0x00,0x00,0xFF};
+                                                vKpointer->color = {0x00,0x00,0x00,0xFF};
                                                 vKpointer-=1;
-                                                //vKpointer->color = {0xFF,0x00,0x00,0xFF}; 
+                                                vKpointer->color = {0xFF,0x00,0x00,0xFF}; 
                                                 break;
                                         case SDLK_e:
                                                 std::cout << world.getEnergy() << "\n" << std::flush;
@@ -116,9 +117,27 @@ int main ()
                                                 break;
                                         case SDLK_1:
                                                 world.coulombfaktor -= 1000;
-                                        break;
+                                                break;
                                         case SDLK_2:
                                                 world.coulombfaktor += 1000;
+                                                break;
+                                        case SDLK_3:
+                                                world.gravF.Y -= 1;
+                                                break;
+                                        case SDLK_4:
+                                                world.gravF.X += 1;
+                                                break;
+                                        case SDLK_5:
+                                                vKpointer->setMass(vKpointer->getMass() - 2);
+                                                break;
+                                        case SDLK_6:
+                                                vKpointer->setMass(vKpointer->getMass() + 2);
+                                                break;
+                                        case SDLK_7:
+                                                world.bouncetype -=1;
+                                                break;
+                                        case SDLK_8:
+                                                world.bouncetype +=1;
                                                 break;
 				}	
 
@@ -133,20 +152,23 @@ int main ()
 		}
 		if (!timer.getstatus())
                 {
+                    for (int i=0; i<1000; i++)
+                    {
                     //std::cout << timer.get() << "\n";
                     world.iterate(1e-5);
+                    }
                 }
-		if( timer.get() >= (1000/FRAMERATE) )
-		{
+                if( timer.get() >= (1000/FRAMERATE) )
+                {
 		SDL_SetRenderDrawColor(gRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
 		SDL_RenderClear(gRenderer);
-		SDL_SetRenderDrawColor(gRenderer, 0x00, 0x00, 0x00, 0xFF);
 		drawobjs(gRenderer, world.vKPartikel, KASTENGROSSE);
+		SDL_SetRenderDrawColor(gRenderer, 0x00, 0x00, 0x00, 0x00);
 		SDL_RenderDrawRect(gRenderer, &drawnRect);
 		SDL_RenderPresent(gRenderer);
 		timer.reset();
-		}
-	}
+                }
+        }
 
 	SDL_DestroyWindow(gWindow);
 	SDL_DestroyRenderer(gRenderer);

@@ -266,15 +266,14 @@ void drawobj(SDL_Renderer* Renderer, kraftpartikel* Obj, int boxsize)
     SDL_Rect objRect = {0,0,boxsize,boxsize};
     objRect.x= Obj->getX()-boxsize/2;
     objRect.y= SCREEN_HEIGHT - Obj->getY()-boxsize/2;
-    std::array<Uint8,4> color = Obj->color;
-    std::cout << unsigned(color.at(0)) << "\n" << std::flush;// << Obj->color[1] << Obj->color[2] << Obj->color[3] << "\n" << std::flush;
+    std::array<unsigned short,4> color = Obj->color;
     SDL_SetRenderDrawColor(Renderer, color.at(0), color.at(1), color.at(2), color.at(3));
     SDL_RenderFillRect(Renderer,&objRect);
 }
 
 void drawobjs(SDL_Renderer* Renderer, std::vector<kraftpartikel> vObj, int boxsize)
 {
-	for (auto it = begin(vObj); it != end(vObj); ++it)
+	for (auto it = vObj.begin(); it < vObj.end(); it++)
 	{
             drawobj(Renderer, &(*it), boxsize);
         }

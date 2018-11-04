@@ -131,14 +131,10 @@ void kraftpartikel::setCharge(float q)
 
 
 
-
 void kraftpartikel::iterate(float t) //iteration of simulation
 {
-	setY( getY() + t * getyvel() ); //Iterate Position with velocity
-	setX( getX() + t * getxvel() );
-	setyvel( getyvel() + t * F.Y / mMass ); //Iterate velocity with force
-	setxvel( getxvel() + t * F.X / mMass );
-	return;
+        pos += t*vel;
+        vel += t/mMass * F;
 }
 
 
@@ -162,45 +158,45 @@ void Worldframe::iterate(float t)
 {
 	for ( std::vector<kraftpartikel>::iterator i = vKPartikel.begin(); i < vKPartikel.end(); i++)
 	{
-		for (std::vector<kraftpartikel>::iterator j = i+1; j < vKPartikel.end(); j++)
-		{
-			elasticBounce(&*i,&*j);
-		}
-		if (isoutofworld(*i))
-		{
-			periodicboundary(&*i);
-		}
-	}
-
-	for ( std::vector<kraftpartikel>::iterator i = vKPartikel.begin(); i < vKPartikel.end(); i++)
-	{
 		i->setFx(0.);
 		i->setFy(0.);
+
 		for ( std::vector<kraftpartikel>::iterator j = vKPartikel.begin(); j < vKPartikel.end(); j++)
 		{
 			if ( i!=j )
 			{
+			elasticBounce(&*i,&*j);
 			radialForce(&*i,&*j,coulombfaktor,-2.);
-			//radialForce(&*i,&*j,-9*coulombfaktor,-5.);
 			}
 		}
+
 		gravitationalForce(&*i,gravF.X,gravF.Y);
 		i->iterate(t);
+                
+                if (isoutofworld(*i))
+		{
+                    switch (bouncetype)
+                    {
+                        case 1:
+                            wallbounce(&*i);
+                            break;
+                        case 2:
+			    periodicboundary(&*i);
+                            break;
+                    }
+		}
 	}
 }
 
 void Worldframe::radialForce(kraftpartikel* part1, kraftpartikel* part2, float kraftfaktor, float exponent)
 {
-	float x = part2->getX() - part1->getX();
-	float y = part2->getY() - part1->getY();
-	part1->setFx(part1->getFx() + part1->getCharge() * part2->getCharge() * x * kraftfaktor * pow( pow(x,2) + pow(y,2) , 0.5 * (exponent - 1.)));
-	part1->setFy(part1->getFy() + part1->getCharge() * part2->getCharge() * y * kraftfaktor * pow( pow(x,2) + pow(y,2) , 0.5 * (exponent - 1)));
+	vec2 r = part2->pos - part1->pos;
+        part1->F += part1->getMass() * part2->getMass() * kraftfaktor * pow( r.abspow2(), 0.5 * (exponent-1)) * r;
 }
 
 void Worldframe::gravitationalForce(kraftpartikel* part, float Fx, float Fy)
 {
-	part->setFx( part->getFx() + Fx);
-	part->setFy( part->getFy() + Fy);
+	part->F += gravF;
 }
 
 void Worldframe::elasticBounce(kraftpartikel* part1, kraftpartikel* part2)
@@ -212,7 +208,7 @@ void Worldframe::elasticBounce(kraftpartikel* part1, kraftpartikel* part2)
         float m1 = part1->getMass();
         float m2 = part2->getMass();
 
-	float faktor = 10;
+	float faktor = 5;
         vec2 rrel = r2 - r1;
         vec2 vrel = v2 - v1;
 	float r = rrel.abs();
@@ -257,4 +253,16 @@ float Worldframe::getEnergy()
         T += pow( i->getxvel(), 2 ) + pow( i->getyvel(), 2);
     }
     return T;
+}
+
+void Worldframe::wallbounce(physobj* part)
+{
+
+    if (part->pos.X > size.X || part->pos.X < 0)
+        part->vel.X *= -1;
+
+    if (part->pos.Y > size.Y || part->pos.Y < 0)
+        part->vel.Y *= -1;
+
+    return;
 }

@@ -13,6 +13,7 @@ class vec2
 	vec2(float X,float Y);
 	std::array<float,2> toarr() const;
 	float abs() const;
+        float abspow2() const;
 	float angle() const;
 	float distTo(const vec2 &b) const;
 	float angTo(const vec2 &b) const;
