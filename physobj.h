@@ -54,16 +54,10 @@ class kraftpartikel : public physobj
 {
 	public:
 		kraftpartikel(float x = 0, float y = 0, float mass = 1, float charge = 1);
-		void iterate(float t);
-		float getFx() const; //get methods
-		float getFy() const;
 		float getMass() const;
 		float getCharge() const;
-		void setFx(float F); //set methods
-		void setFy(float F);
 		void setMass(float m);
 		void setCharge(float q);
-		vec2 F;
 
 	private:
 		float mMass=1;
@@ -85,7 +79,7 @@ class Worldframe
 		vec2 gravF;
 		float coulombfaktor = 40000;
                 float getEnergy();
-		std::vector<kraftpartikel> vKPartikel;
+                std::vector<kraftpartikel> vKPartikel;
                 int bouncetype = 1;
 	private:
 		void radialForce(kraftpartikel* part1, kraftpartikel* part2, float kraftfaktor, float exponent); //radialkraft part2 auf part1. Form: F^{->} = e^{^}_{r} * kraftfaktor * r^{exponent}
@@ -95,6 +89,7 @@ class Worldframe
 		bool isoutofworld(const physobj& part) const;
                 void periodicboundary(physobj* part);
                 void wallbounce(physobj* part);
+                void rk_integrate();
 };
 
 #endif

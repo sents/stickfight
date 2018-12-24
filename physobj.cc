@@ -89,15 +89,7 @@ kraftpartikel::kraftpartikel(float x, float y, float mass, float charge) : physo
 	mCharge=charge;
 }
 
-float kraftpartikel::getFx() const
-{
-	return F.X;
-}
 
-float kraftpartikel::getFy() const
-{
-	return F.Y;
-}
 float kraftpartikel::getMass() const
 {
 	return mMass;
@@ -108,15 +100,6 @@ float kraftpartikel::getCharge() const
 	return mCharge;
 }
 
-void kraftpartikel::setFx(float Fx)
-{
-	F.X = Fx;
-}
-
-void kraftpartikel::setFy(float Fy)
-{
-	F.Y = Fy;
-}
 
 void kraftpartikel::setMass(float m)
 {
@@ -126,15 +109,6 @@ void kraftpartikel::setMass(float m)
 void kraftpartikel::setCharge(float q)
 {
 	mCharge = q;
-}
-
-
-
-
-void kraftpartikel::iterate(float t) //iteration of simulation
-{
-        pos += t*vel;
-        vel += t/mMass * F;
 }
 
 
@@ -154,50 +128,6 @@ Worldframe::~Worldframe()
 {
 }
 
-void Worldframe::iterate(float t)
-{
-	for ( std::vector<kraftpartikel>::iterator i = vKPartikel.begin(); i < vKPartikel.end(); i++)
-	{
-		i->setFx(0.);
-		i->setFy(0.);
-
-		for ( std::vector<kraftpartikel>::iterator j = vKPartikel.begin(); j < vKPartikel.end(); j++)
-		{
-			if ( i!=j )
-			{
-			elasticBounce(&*i,&*j);
-			radialForce(&*i,&*j,coulombfaktor,-2.);
-			}
-		}
-
-		gravitationalForce(&*i,gravF.X,gravF.Y);
-		i->iterate(t);
-                
-                if (isoutofworld(*i))
-		{
-                    switch (bouncetype)
-                    {
-                        case 1:
-                            wallbounce(&*i);
-                            break;
-                        case 2:
-			    periodicboundary(&*i);
-                            break;
-                    }
-		}
-	}
-}
-
-void Worldframe::radialForce(kraftpartikel* part1, kraftpartikel* part2, float kraftfaktor, float exponent)
-{
-	vec2 r = part2->pos - part1->pos;
-        part1->F += part1->getMass() * part2->getMass() * kraftfaktor * pow( r.abspow2(), 0.5 * (exponent-1)) * r;
-}
-
-void Worldframe::gravitationalForce(kraftpartikel* part, float Fx, float Fy)
-{
-	part->F += gravF;
-}
 
 void Worldframe::elasticBounce(kraftpartikel* part1, kraftpartikel* part2)
 {
@@ -265,4 +195,9 @@ void Worldframe::wallbounce(physobj* part)
         part->vel.Y *= -1;
 
     return;
+}
+
+Worldframe::rk_integrate()
+{
+
 }

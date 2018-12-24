@@ -12,7 +12,7 @@ COMPILER_FLAGS = -w -std=c++11
 LINKER_FLAGS = -lSDL2 -lSDL2_image -lSDL2_ttf
 
 #OBJ_NAME specifies the name of our exectuable
-OBJ_NAME = stickfight
+OBJ_NAME = stickfight.out
 
 #This is the target that compiles our executable
 OBJS: $(OBJS)
